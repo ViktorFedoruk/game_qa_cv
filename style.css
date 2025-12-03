@@ -466,11 +466,6 @@ body {
     transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-.avatar-image.avatar-loaded {
-    opacity: 1 !important;
-    transform: scale(1) !important;
-}
-
 .avatar-ring {
     position: absolute;
     width: 110%;
@@ -1585,6 +1580,11 @@ body {
 }
 
 @media (max-width: 768px) {
+    
+    html, body {
+    overflow-x: hidden;
+    }
+
     .main-nav {
         position: fixed;
         bottom: 0;
@@ -1667,7 +1667,9 @@ body {
 
     .status-item {
         flex: 0 0 auto;             /* фиксируем ширину плитки */
-        min-width: 120px;           /* минимальная ширина плитки */
+        min-width: 110px;           /* минимальная ширина плитки */
+        max-width: 100%; /* не выходить за экран */
+        box-sizing: border-box;
     }
     
     .avatar-container {
