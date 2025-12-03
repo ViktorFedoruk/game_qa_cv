@@ -335,19 +335,25 @@ function activateSection(sectionId) {
     // Анимация загрузки аватара
     const avatarImg = document.querySelector('.avatar-image');
     if (avatarImg) {
-        avatarImg.addEventListener('load', function() {
-            this.style.opacity = '1';
-            this.style.transform = 'scale(1)';
-        });
-        
+        function showAvatar() {
+            avatarImg.style.opacity = '1';
+            avatarImg.style.transform = 'scale(1)';
+        }
+
+        avatarImg.addEventListener('load', showAvatar);
         avatarImg.addEventListener('error', function() {
             console.log('Аватар не загружен. Используется placeholder.');
         });
-        
+
         // Начальное состояние
         avatarImg.style.opacity = '0';
         avatarImg.style.transform = 'scale(0.8)';
         avatarImg.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+
+        // Если картинка уже закэширована и загружена
+        if (avatarImg.complete) {
+            showAvatar();
+        }
     }
     
     // Параллакс эффект для фона
