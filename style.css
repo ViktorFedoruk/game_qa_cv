@@ -327,41 +327,8 @@ body {
     width: 100%;
 }
 
-@media (max-width: 1200px) {
-    .main-content {
-        padding-left: 280px;
-        padding-right: 40px;
-    }
-}
-
-@media (max-width: 992px) {
-    .main-content {
-        padding-left: 260px;
-        padding-right: 30px;
-    }
-    
-    .skills-grid {
-        grid-template-columns: 1fr;
-        gap: 30px;
-    }
-}
-
-@media (max-width: 768px) {
-    .main-content {
-        margin-left: 0;
-        margin-bottom: 60px;
-        padding: 30px 20px;
-        max-width: 100%;
-        width: 100%;
-    }
-    
-    .section {
-        padding-top: 60px;
-        padding-bottom: 40px;
-    }
-}
-
 .section {
+    overflow-x: hidden;   /* запрещаем горизонтальный скролл */
     min-height: auto;
     padding: 60px 0;
     opacity: 0;
@@ -511,6 +478,7 @@ body {
     padding: 15px;
     text-align: center;
     transition: all 0.3s ease;
+    gap: 10px;
 }
 
 .status-item:hover {
@@ -1648,19 +1616,39 @@ body {
     }
 
     .hero-status {
-        display: flex;              /* вместо grid */
-        flex-direction: row;        /* плитки в строку */
-        justify-content: space-around;
-        gap: 10px;
-        overflow-x: auto;           /* горизонтальная прокрутка при нехватке места */
-        -webkit-overflow-scrolling: touch; /* плавный скролл на iOS */
+        display: flex;
+        grid-template-columns: repeat(3, 1fr); /* вместо 3 плиток в ряд — по 2 */
+        gap: 12px;
+        margin-top: 20px;
+        transform: scale(0.95);                /* лёгкое масштабирование */
+        transform-origin: top center;          /* масштабируем относительно центра сверху */
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        justify-items: center;                 /* выравнивание содержимого */
     }
 
     .status-item {
-        flex: 0 0 auto;             /* фиксируем ширину плитки */
-        min-width: 110px;           /* минимальная ширина плитки */
-        max-width: 100%; /* не выходить за экран */
+        width: 100%;
+        max-width: 160px;                      /* ограничиваем ширину плитки */
+        padding: 12px;
+        font-size: 0.85rem;
         box-sizing: border-box;
+        overflow-wrap: break-word;             /* перенос длинных слов */
+        word-break: break-word;
+    }
+
+    .status-item i {
+        font-size: 1.3rem;                     /* чуть меньше иконки */
+        margin-bottom: 8px;
+    }
+
+    .status-item span:first-child {
+        font-size: 0.8rem;                     /* уменьшаем подписи */
+    }
+
+    .status-value {
+        font-size: 1.1rem;                     /* уменьшаем значения */
     }
     
     .avatar-container {
