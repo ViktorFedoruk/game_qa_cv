@@ -338,6 +338,7 @@ function activateSection(sectionId) {
         function showAvatar() {
             avatarImg.style.opacity = '1';
             avatarImg.style.transform = 'scale(1)';
+            avatarImg.classList.add('avatar-loaded');
         }
 
         avatarImg.addEventListener('load', showAvatar);
