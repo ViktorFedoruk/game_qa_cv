@@ -1716,13 +1716,13 @@ body {
         top: 0;
         bottom: 0;
         left: 0;
-        width: 60px;                  /* компактная ширина */
+        width: 60px !important;                  /* компактная ширина */
         height: 100vh;                /* тянем на всю высоту экрана */
         display: flex;
-        flex-direction: column;
-        justify-content: space-evenly;
-        align-items: center;
-        padding: 10px 0;
+        flex-direction: column !important;
+        justify-content: space-evenly !important;
+        align-items: center !important;
+        padding: 10px 0 !important;
         border-right: 1px solid rgba(14, 165, 233, 0.2);
         box-shadow: var(--shadow-nav);
         z-index: 1000;
@@ -1730,11 +1730,11 @@ body {
 
     .nav-header,
     .nav-footer {
-        display: none;                 /* убираем заголовки и футер */
+        display: none !important;                 /* убираем заголовки и футер */
     }
 
     .nav-menu {
-        flex: 1;                       /* занимает всё доступное пространство */
+        flex: 1 !important;                       /* занимает всё доступное пространство */
         display: flex;
         flex-direction: column;
         justify-content: space-evenly; /* равномерное распределение иконок */
@@ -1751,9 +1751,9 @@ body {
     }
 
     .nav-link {
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
         padding: 10px 0;
         border: none;
         font-size: 0.75rem;
