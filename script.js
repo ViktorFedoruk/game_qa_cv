@@ -175,7 +175,7 @@ function activateSection(sectionId) {
     // ===== ЧАСТИЦЫ =====
     function setupParticles() {
         const particlesContainer = document.getElementById('particles');
-        const particleCount = 500;
+        const particleCount = 200;
         
         for (let i = 0; i < particleCount; i++) {
             createParticle(particlesContainer);
@@ -395,4 +395,5 @@ function activateSection(sectionId) {
             element.textContent = element.textContent.replace('2025', new Date().getFullYear());
         }
     });
+
 });
