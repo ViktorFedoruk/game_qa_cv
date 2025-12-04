@@ -1749,7 +1749,10 @@ body {
         width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
-        overflow-y: hidden !important;            /* убираем скроллбар */
+        overflow-y: auto !important;
+        /* скрываем сам скроллбар */
+        scrollbar-width: none;        /* Firefox */
+        -ms-overflow-style: none;     /* IE/Edge Legacy */
     }
 
     .nav-menu li {
