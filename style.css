@@ -1710,6 +1710,101 @@ body {
     }
 }
 
+/* 📱 Жёсткая адаптация для мобильного лендскейпа */
+@media screen and (max-height: 600px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+    .main-nav {
+        position: fixed !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 64px !important;                  /* компактная ширина */
+        height: 100vh !important;                /* тянем на всю высоту экрана */
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-evenly !important;
+        align-items: center !important;
+        padding: 10px 0 !important;
+        border-right: 1px solid rgba(14, 165, 233, 0.2) !important;
+        box-shadow: var(--shadow-nav) !important;
+        z-index: 1000 !important;
+    }
+
+    .nav-header,
+    .nav-footer {
+        display: none !important;                 /* убираем заголовки и футер */
+    }
+
+    .nav-menu {
+        flex: 1 !important;                       
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-evenly !important; 
+        align-items: center !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow-y: hidden !important;            /* убираем скроллбар */
+    }
+
+    .nav-menu li {
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .nav-link {
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 10px 0 !important;
+        border: none !important;
+        font-size: 0.75rem !important;
+        width: 100% !important;
+    }
+
+    .nav-link span {
+        display: none !important;                 /* оставляем только иконки */
+    }
+
+    .nav-link i {
+        font-size: 1.4rem !important;             /* чуть крупнее иконки для удобства */
+    }
+
+    .main-content {
+        margin-left: 80px !important;             /* отступ под навбар */
+        padding: 20px !important;
+        max-width: calc(100% - 80px) !important;
+        box-sizing: border-box !important;
+    }
+
+    .advantages-grid {
+        grid-template-columns: 1fr !important;
+        padding-left: 0 !important;      
+        gap: 20px !important;
+    }
+
+    /* Таймлайн */
+    .timeline {
+        padding-left: 0 !important;      
+    }
+
+    .timeline::before {
+        left: 16px !important;           
+    }
+
+    .timeline-item {
+        padding-left: 40px !important;   
+    }
+
+    .timeline-item::before {
+        left: 10px !important;           
+    }
+
+    /* Контакты */
+    .contact-container {
+        padding-left: 0 !important;      
+    }
+}
+
 /* ===== УТИЛИТЫ ===== */
 .en-text { display: none; }
 .ru-text { display: block; }
@@ -1744,98 +1839,4 @@ body {
 ::-moz-selection {
     background: rgba(14, 165, 233, 0.3);
     color: var(--space-white);
-}
-
-@media screen and (max-height: 600px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
-    .main-nav {
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 60px !important;                  /* компактная ширина */
-        height: 100vh;                /* тянем на всю высоту экрана */
-        display: flex;
-        flex-direction: column !important;
-        justify-content: space-evenly !important;
-        align-items: center !important;
-        padding: 10px 0 !important;
-        border-right: 1px solid rgba(14, 165, 233, 0.2);
-        box-shadow: var(--shadow-nav);
-        z-index: 1000;
-    }
-
-    .nav-header,
-    .nav-footer {
-        display: none !important;                 /* убираем заголовки и футер */
-    }
-
-    .nav-menu {
-        flex: 1 !important;                       /* занимает всё доступное пространство */
-        display: flex;
-        flex-direction: column;
-        justify-content: space-evenly; /* равномерное распределение иконок */
-        align-items: center;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        overflow-y: hidden;            /* убираем скроллбар */
-    }
-
-    .nav-menu li {
-        margin: 0;
-        width: 100%;
-    }
-
-    .nav-link {
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: center !important;
-        padding: 10px 0;
-        border: none;
-        font-size: 0.75rem;
-        width: 100%;
-    }
-
-    .nav-link span {
-        display: none;                 /* оставляем только иконки */
-    }
-
-    .nav-link i {
-        font-size: 1.4rem;             /* чуть крупнее иконки для удобства */
-    }
-
-    .main-content {
-        margin-left: 80px;             /* отступ под навбар */
-        padding: 20px;
-        max-width: calc(100% - 80px);
-        box-sizing: border-box;
-    }
-
-    .advantages-grid {
-        grid-template-columns: 1fr;
-        padding-left: 0;      /* убираем лишний отступ */
-        gap: 20px;
-    }
-
-    /* Таймлайн */
-    .timeline {
-        padding-left: 0;      /* убираем смещение */
-    }
-
-    .timeline::before {
-        left: 16px;           /* линия ближе к краю */
-    }
-
-    .timeline-item {
-        padding-left: 40px;   /* оставляем место для точки */
-    }
-
-    .timeline-item::before {
-        left: 10px;           /* точка ближе к краю */
-    }
-
-     /* Контакты */
-    .contact-container {
-        padding-left: 0;      /* убираем лишний отступ */
-    }
 }
