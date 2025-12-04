@@ -92,7 +92,11 @@ function setupNavigation() {
 
     function setActiveLink(targetId) {
         navLinks.forEach(link => {
-            link.classList.toggle('active', link.getAttribute('href') === targetId);
+            if (link.getAttribute('href') === targetId) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
         });
     }
 
@@ -130,6 +134,12 @@ function setupNavigation() {
                 current = sec.id;
             }
         });
+
+        // Сначала снимаем активность у всех
+        navLinks.forEach(link => link.classList.remove('active'));
+        sections.forEach(sec => sec.classList.remove('active'));
+
+        // Если нашли текущую секцию — подсвечиваем её
         if (current) {
             setActiveLink(`#${current}`);
             activateSection(`#${current}`);

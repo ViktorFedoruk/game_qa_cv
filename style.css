@@ -1467,20 +1467,27 @@ body {
     .nav-menu li {
         margin: 0;
         flex: 1;
+        justify-content: center;
+        align-items: center;
     }
 
     .nav-link {
         flex-direction: row;  /* вместо column */
+        border-left: none !important;
         justify-content: center;
         align-items: center;
         padding: 8px 5px;
         height: 100%; 
     }
 
+    .nav-link i {
+        width: auto !important;
+        font-size: 1.4rem !important;             /* чуть крупнее иконки для удобства */
+    }
 
     .nav-link.active {
-        border-left-color: transparent;
-        border-top-color: var(--space-cyan);
+        border-left: none !important;       /* убираем левую рамку */
+        border-top: 3px solid var(--space-cyan) !important; /* подсветка сверху */
     }
 
     /* скрываем текстовые подписи, оставляем только иконки */
@@ -1710,7 +1717,7 @@ body {
 }
 
 /* 📱 Жёсткая адаптация для мобильного лендскейпа */
-@media screen and (max-height: 500px) and (orientation: landscape) {
+@media screen and (max-height: 600px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
     .main-nav {
         position: fixed !important;
         top: 0 !important;
@@ -1754,10 +1761,14 @@ body {
         flex-direction: column !important;
         justify-content: center !important;
         align-items: center !important;
-        padding: 10px 0 !important;
         border: none !important;
         font-size: 0.75rem !important;
         width: 100% !important;
+    }
+
+    .nav-link.active {
+        border-right: 3px solid var(--space-cyan) !important; /* подсветка сверху */    
+        border-top: none !important;       /* убираем левую рамку */
     }
 
     .nav-link span {
@@ -1838,7 +1849,4 @@ body {
 ::-moz-selection {
     background: rgba(14, 165, 233, 0.3);
     color: var(--space-white);
-
 }
-
-
