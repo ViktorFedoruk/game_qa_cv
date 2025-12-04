@@ -247,7 +247,6 @@ body {
     overflow-y: hidden; /* убираем скролл */
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly; /* равномерно распределяем */
 }
 
 .nav-menu li {
@@ -1841,4 +1840,5 @@ body {
     color: var(--space-white);
 
 }
+
 
