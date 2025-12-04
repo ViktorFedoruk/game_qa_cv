@@ -28,57 +28,57 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('%cSystem: Sci-Fi Interface Active', 'color: #06b6d4;');
     }
     
-    // ===== НАСТРОЙКА ЯЗЫКА =====
-    function setupLanguage() {
-        const html = document.getElementById('html');
-        const langOptions = document.querySelectorAll('.lang-option');
-        
-        // Проверяем сохранённый язык или определяем по браузеру
-        const savedLang = localStorage.getItem('cv_lang');
-        const browserLang = navigator.language.startsWith('ru') ? 'ru' : 'en';
-        const currentLang = savedLang || browserLang;
-        
-        // Устанавливаем язык
-        setLanguage(currentLang);
-        
-        // Обработка кликов по переключателю языка
-        langOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const lang = this.dataset.lang;
-                setLanguage(lang);
-                saveLanguage(lang);
-            });
-        });
-    }
+   // ===== НАСТРОЙКА ЯЗЫКА =====
+function setupLanguage() {
+    const html = document.getElementById('html');
+    const langOptions = document.querySelectorAll('.lang-option');
     
-    function setLanguage(lang) {
-        const html = document.getElementById('html');
-        const langOptions = document.querySelectorAll('.lang-option');
-        
-        // Устанавливаем класс на html
-        html.className = `lang-${lang}`;
-        
-        // Обновляем активную опцию
-        langOptions.forEach(option => {
-            option.classList.remove('active');
-            if (option.dataset.lang === lang) {
-                option.classList.add('active');
-            }
-        });
-    }
+    // Проверяем сохранённый язык, иначе по умолчанию 'en'
+    const savedLang = localStorage.getItem('cv_lang');
+    const currentLang = savedLang || 'en';   // всегда дефолт 'en'
     
-    function saveLanguage(lang) {
-        localStorage.setItem('cv_lang', lang);
-    }
+    // Устанавливаем язык
+    setLanguage(currentLang);
+    
+    // Обработка кликов по переключателю языка
+    langOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const lang = this.dataset.lang;
+            setLanguage(lang);
+            saveLanguage(lang); // сохраняем выбор
+        });
+    });
+}
 
-        document.addEventListener("scroll", function() {
-        const switcher = document.querySelector(".language-switcher");
-        if (window.scrollY > 0) {
-            switcher.classList.add("hidden");   // прячем при старте скролла
-        } else {
-            switcher.classList.remove("hidden"); // показываем снова вверху страницы
+function setLanguage(lang) {
+    const html = document.getElementById('html');
+    const langOptions = document.querySelectorAll('.lang-option');
+    
+    // Устанавливаем класс на html
+    html.className = `lang-${lang}`;
+    
+    // Обновляем активную опцию
+    langOptions.forEach(option => {
+        option.classList.remove('active');
+        if (option.dataset.lang === lang) {
+            option.classList.add('active');
         }
     });
+}
+
+function saveLanguage(lang) {
+    localStorage.setItem('cv_lang', lang);
+}
+
+// Скрытие переключателя при скролле
+document.addEventListener("scroll", function() {
+    const switcher = document.querySelector(".language-switcher");
+    if (window.scrollY > 0) {
+        switcher.classList.add("hidden");
+    } else {
+        switcher.classList.remove("hidden");
+    }
+});
     
     // ===== НАВИГАЦИЯ =====
 function setupNavigation() {
@@ -285,7 +285,8 @@ function activateSection(sectionId) {
             {time: getFormattedTime(), ru: "Профиль загружен", en: "Profile loaded"},
             {time: getFormattedTime(), ru: "Анализ навыков...", en: "Analyzing skills..."},
             {time: getFormattedTime(), ru: "Навыки загружены", en: "Skills loaded"},
-            {time: getFormattedTime(), ru: "Готов к работе", en: "Ready for work"}
+            {time: getFormattedTime(), ru: "Готов к работе", en: "Ready for work"},
+            {time: getFormattedTime(), ru: "Соискатель обнаружен", en: "The applicant has been found"}
         ];
         
         // Добавляем начальные сообщения
@@ -323,7 +324,8 @@ function activateSection(sectionId) {
                 {ru: "Тестовая проверка... УСПЕШНО", en: "Test check... SUCCESS"},
                 {ru: "Анализ завершен", en: "Analysis complete"},
                 {ru: "Система стабильна", en: "System stable"},
-                {ru: "Готов к новым задачам", en: "Ready for new tasks"}
+                {ru: "Готов к новым задачам", en: "Ready for new tasks"},
+                {ru: "Камера и микрофон активированы", en: "The camera and microphone are activated"}
             ];
             
             const randomLog = testLogs[Math.floor(Math.random() * testLogs.length)];
