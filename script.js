@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-// ===== НАВИГАЦИЯ =====
+    // ===== НАВИГАЦИЯ =====
 function setupNavigation() {
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('.section');
@@ -92,11 +92,7 @@ function setupNavigation() {
 
     function setActiveLink(targetId) {
         navLinks.forEach(link => {
-            if (link.getAttribute('href') === targetId) {
-                link.classList.add('active');
-            } else {
-                link.classList.remove('active');
-            }
+            link.classList.toggle('active', link.getAttribute('href') === targetId);
         });
     }
 
@@ -112,50 +108,31 @@ function setupNavigation() {
                 activateSection(targetId);
             }
         });
-
-        // Сброс временного выделения при таче
-        link.addEventListener('touchstart', () => {
-            navLinks.forEach(l => l.classList.remove('active-temp'));
-            link.classList.add('active-temp');
-        });
-        link.addEventListener('touchend', () => {
-            link.classList.remove('active-temp');
-        });
     });
 
-    // Обновление активной секции при скролле и движении пальцем
-    function updateActiveOnScroll() {
-        const scrollPosition = window.scrollY + 150;
-        let current = '';
-        sections.forEach(sec => {
-            const sectionTop = sec.offsetTop;
-            const sectionHeight = sec.clientHeight;
-            if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight - 100) {
-                current = sec.id;
-            }
-        });
-
-        // Сначала снимаем активность у всех
-        navLinks.forEach(link => link.classList.remove('active'));
-        sections.forEach(sec => sec.classList.remove('active'));
-
-        // Если нашли текущую секцию — подсвечиваем её
-        if (current) {
-            setActiveLink(`#${current}`);
-            activateSection(`#${current}`);
+    // Определение активной секции при скролле
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                const scrollPosition = window.scrollY + 150;
+                let current = '';
+                sections.forEach(sec => {
+                    const sectionTop = sec.offsetTop;
+                    const sectionHeight = sec.clientHeight;
+                    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight - 100) {
+                        current = sec.id;
+                    }
+                });
+                if (current) {
+                    setActiveLink(`#${current}`);
+                    activateSection(`#${current}`);
+                }
+                ticking = false;
+            });
+            ticking = true;
         }
-    }
-
-    window.addEventListener('scroll', updateActiveOnScroll, { passive: true });
-    window.addEventListener('touchmove', updateActiveOnScroll, { passive: true });
-
-    // Сброс лишних состояний при смене ориентации
-    window.addEventListener('orientationchange', () => {
-        navLinks.forEach(link => {
-            link.classList.remove('active-temp');
-        });
-        updateActiveOnScroll(); // пересчёт активной секции
-    });
+    }, { passive: true });
 
     // При обновлении страницы всегда возвращаемся к первой секции
     window.addEventListener('load', () => {
@@ -177,7 +154,7 @@ function activateSection(sectionId) {
         }
     });
 }
-   
+    
     // ===== ВРЕМЯ =====
     function setupTime() {
         const timeElement = document.getElementById('currentTime').querySelector('span');
