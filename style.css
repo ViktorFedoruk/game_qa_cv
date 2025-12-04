@@ -1707,7 +1707,7 @@ body {
     }
 }
 
-@media (max-device-width: 1024px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+@media (max-width: 1280px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
     .main-nav {
         position: fixed;
         top: 0;
@@ -1837,3 +1837,4 @@ body {
     color: var(--space-white);
 
 }
+
