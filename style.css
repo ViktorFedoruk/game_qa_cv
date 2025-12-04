@@ -1717,7 +1717,7 @@ body {
 }
 
 /* 📱 Жёсткая адаптация для мобильного лендскейпа */
-@media screen and (max-height: 600px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+@media screen and (max-height: 600px) and (orientation: landscape) {
     .main-nav {
         position: fixed !important;
         top: 0 !important;
@@ -1849,4 +1849,5 @@ body {
 ::-moz-selection {
     background: rgba(14, 165, 233, 0.3);
     color: var(--space-white);
+
 }
