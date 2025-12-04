@@ -1710,6 +1710,42 @@ body {
     }
 }
 
+/* ===== УТИЛИТЫ ===== */
+.en-text { display: none; }
+.ru-text { display: block; }
+
+.lang-en .en-text { display: block; }
+.lang-en .ru-text { display: none; }
+
+/* Кастомный скроллбар */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(14, 165, 233, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gradient-blue);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--space-blue);
+}
+
+/* Selection */
+::selection {
+    background: rgba(14, 165, 233, 0.3);
+    color: var(--space-white);
+}
+
+::-moz-selection {
+    background: rgba(14, 165, 233, 0.3);
+    color: var(--space-white);
+}
+
 @media screen and (max-height: 600px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
     .main-nav {
         position: fixed;
@@ -1802,40 +1838,4 @@ body {
     .contact-container {
         padding-left: 0;      /* убираем лишний отступ */
     }
-}
-
-/* ===== УТИЛИТЫ ===== */
-.en-text { display: none; }
-.ru-text { display: block; }
-
-.lang-en .en-text { display: block; }
-.lang-en .ru-text { display: none; }
-
-/* Кастомный скроллбар */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: rgba(14, 165, 233, 0.05);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--gradient-blue);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--space-blue);
-}
-
-/* Selection */
-::selection {
-    background: rgba(14, 165, 233, 0.3);
-    color: var(--space-white);
-}
-
-::-moz-selection {
-    background: rgba(14, 165, 233, 0.3);
-    color: var(--space-white);
 }
