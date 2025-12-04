@@ -1707,7 +1707,7 @@ body {
     }
 }
 
-@media (orientation: landscape) and (hover: none) and (pointer: coarse) {
+@media (max-device-width: 1024px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
     .main-nav {
         position: fixed;
         top: 0;
@@ -1835,4 +1835,5 @@ body {
 ::-moz-selection {
     background: rgba(14, 165, 233, 0.3);
     color: var(--space-white);
+
 }
