@@ -323,8 +323,25 @@ function activateSection(sectionId) {
             consoleOutput.scrollTop = consoleOutput.scrollHeight;
         }
         
-        // Клик по консоли для добавления тестового лога
-        consoleOutput.addEventListener('click', function() {
+     // Клик по консоли для добавления тестового лога
+    let clickCount = 0;
+    const specialLogs = [
+        {ru: "Прекрати", en: "Stop it"},
+        {ru: "Что будет дальше?", en: "What will happen next?"},
+        {ru: "Может хватит уже?", en: "Maybe that's enough already?"},
+        {ru: "Хм, а ты упорный", en: "Hmm, you're persistent"},
+        {ru: "Не устал?:)", en: "Not tired yet?"}
+    ];
+
+    consoleOutput.addEventListener('click', function() {
+        clickCount++;
+
+        // Каждые 5 кликов выводим спец‑сообщение
+        if (clickCount % 5 === 0) {
+            const index = (clickCount / 5 - 1) % specialLogs.length;
+            const specialLog = specialLogs[index];
+            addLogEntry(getFormattedTime(), specialLog.ru, specialLog.en);
+        } else {
             const testLogs = [
                 {ru: "Тестовая проверка... УСПЕШНО", en: "Test check... SUCCESS"},
                 {ru: "Анализ завершен", en: "Analysis complete"},
@@ -335,7 +352,8 @@ function activateSection(sectionId) {
             
             const randomLog = testLogs[Math.floor(Math.random() * testLogs.length)];
             addLogEntry(getFormattedTime(), randomLog.ru, randomLog.en);
-        });
+        }
+    });
     }
     
     // ===== ДОПОЛНИТЕЛЬНЫЕ ЭФФЕКТЫ =====
@@ -512,7 +530,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Добавляем обработчик для рекалькуляции при изменении размера окна
     window.addEventListener('resize', setupTimelineDurations);
 });
-
 
 
 });
