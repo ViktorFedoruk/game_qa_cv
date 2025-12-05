@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Инициализация консоли
         setupConsole();
+
+        // Инициализация подсчета длительности работы
+        setupTimelineDurations();
         
         // Консольное сообщение
         console.log('%c🚀 QA Game Tester CV Loaded', 'color: #0ea5e9; font-size: 16px; font-weight: bold;');
@@ -53,17 +56,19 @@ function setupLanguage() {
 function setLanguage(lang) {
     const html = document.getElementById('html');
     const langOptions = document.querySelectorAll('.lang-option');
-    
-    // Устанавливаем класс на html
+
     html.className = `lang-${lang}`;
-    
-    // Обновляем активную опцию
+
     langOptions.forEach(option => {
         option.classList.remove('active');
         if (option.dataset.lang === lang) {
             option.classList.add('active');
         }
     });
+
+    // Применяем длительность на новом языке
+    applyDurationLanguage(lang);
+    saveLanguage(lang);
 }
 
 function saveLanguage(lang) {
@@ -286,7 +291,7 @@ function activateSection(sectionId) {
             {time: getFormattedTime(), ru: "Анализ навыков...", en: "Analyzing skills..."},
             {time: getFormattedTime(), ru: "Навыки загружены", en: "Skills loaded"},
             {time: getFormattedTime(), ru: "Готов к работе", en: "Ready for work"},
-            {time: getFormattedTime(), ru: "Пользователь обнаружен", en: "User detected"}
+            {time: getFormattedTime(), ru: "Соискатель обнаружен", en: "The applicant has been found"}
         ];
         
         // Добавляем начальные сообщения
@@ -397,5 +402,116 @@ function activateSection(sectionId) {
             element.textContent = element.textContent.replace('2025', new Date().getFullYear());
         }
     });
+
+    // ===== АВТОМАТИЧЕСКИЙ ПОДСЧЁТ ДЛИТЕЛЬНОСТИ РАБОТЫ =====
+function setupTimelineDurations() {
+    const items = document.querySelectorAll('.timeline-date[data-start]');
+    const now = new Date();
+
+    items.forEach(item => {
+        const startAttr = item.getAttribute('data-start');
+        const endAttr = item.getAttribute('data-end');
+        if (!startAttr) return;
+
+        // Парсим даты
+        const startDate = new Date(startAttr);
+        const endDate = endAttr ? new Date(endAttr) : now;
+
+        // Клонируем даты, чтобы не менять оригиналы
+        let tempStart = new Date(startDate);
+        let tempEnd = new Date(endDate);
+        
+        // Рассчитываем годы и месяцы через общее количество месяцев
+        let totalMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12
+                        + (endDate.getMonth() - startDate.getMonth());
+
+        // Если день окончания >= дня начала — считаем месяц завершённым
+        if (endDate.getDate() >= startDate.getDate()) {
+            totalMonths++;
+        }
+
+        let years = Math.floor(totalMonths / 12);
+        let months = totalMonths % 12;
+
+        
+        // Если месяцы стали отрицательными после коррекции по дням
+        if (months < 0) {
+            months += 12;
+            years--;
+        }
+
+        // Функции для склонения
+        function getRussianYearWord(count) {
+            if (count === 1) return 'год';
+            if (count >= 2 && count <= 4) return 'года';
+            return 'лет';
+        }
+
+        function getRussianMonthWord(count) {
+            if (count === 1) return 'месяц';
+            if (count >= 2 && count <= 4) return 'месяца';
+            return 'месяцев';
+        }
+
+        function getEnglishYearWord(count) {
+            return count === 1 ? 'year' : 'years';
+        }
+
+        function getEnglishMonthWord(count) {
+            return count === 1 ? 'month' : 'months';
+        }
+
+        // Форматируем текст с учетом склонений
+        let ruText = '';
+        let enText = '';
+
+        if (years > 0 && months === 0) {
+            // Только годы (ровно)
+            ruText = `${years} ${getRussianYearWord(years)}`;
+            enText = `${years} ${getEnglishYearWord(years)}`;
+        } else if (years > 0) {
+            // Годы и месяцы
+            ruText = `${years} ${getRussianYearWord(years)} ${months} ${getRussianMonthWord(months)}`;
+            enText = `${years} ${getEnglishYearWord(years)} ${months} ${getEnglishMonthWord(months)}`;
+        } else {
+            // Только месяцы
+            ruText = `${months} ${getRussianMonthWord(months)}`;
+            enText = `${months} ${getEnglishMonthWord(months)}`;
+        }
+
+        // Находим или создаем элемент для отображения
+        let durationEl = item.querySelector('.timeline-duration');
+        if (!durationEl) {
+            durationEl = document.createElement('span');
+            durationEl.className = 'timeline-duration';
+            item.appendChild(durationEl);
+        }
+
+        // Сохраняем данные для обоих языков
+        durationEl.dataset.ru = ruText;
+        durationEl.dataset.en = enText;
+        
+        // Устанавливаем текущий язык
+        const currentLang = localStorage.getItem('cv_lang') || 'en';
+        durationEl.textContent = durationEl.dataset[currentLang];
+    });
+}
+
+function applyDurationLanguage(lang) {
+    document.querySelectorAll('.timeline-duration').forEach(el => {
+        if (el.dataset[lang]) {
+            el.textContent = el.dataset[lang];
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация
+    init();
+    
+    // Добавляем обработчик для рекалькуляции при изменении размера окна
+    window.addEventListener('resize', setupTimelineDurations);
+});
+
 
 });
