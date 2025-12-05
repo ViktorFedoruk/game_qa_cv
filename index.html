@@ -514,10 +514,12 @@
             
             <div class="timeline">
                 <div class="timeline-item">
-                    <div class="timeline-date">
-                        <span class="ru-text">Март 2021 - Настоящее время</span>
-                        <span class="en-text">March 2021 - Present</span>
-                        <span class="timeline-duration">4 y. 10 m.</span>
+                    <div class="timeline-date" data-start="2021-03-01">
+                        <!-- фиксированные подписи -->
+                        <span class="ru-text">Март 2021 – Настоящее время</span>
+                        <span class="en-text">March 2021 – Present</span>
+                        <!-- динамическая длительность -->
+                        <span class="timeline-duration" data-ru="" data-en=""></span>
                     </div>
                     <div class="timeline-content">
                         <div class="timeline-header">
@@ -570,10 +572,10 @@
                 </div>
                 
                 <div class="timeline-item">
-                    <div class="timeline-date">
-                        <span class="ru-text">Март 2020 - Февраль 2021</span>
-                        <span class="en-text">March 2020 - February 2021</span>
-                        <span class="timeline-duration">1 year</span>
+                    <div class="timeline-date" data-start="2020-03-01" data-end="2021-02-28">
+                        <span class="ru-text">Март 2020 – Февраль 2021</span>
+                        <span class="en-text">March 2020 – February 2021</span>
+                        <span class="timeline-duration" data-ru="" data-en=""></span>
                     </div>
                     <div class="timeline-content">
                         <div class="timeline-header">
@@ -982,6 +984,6 @@
     </main>
 
     <!-- Скрипты -->
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
 </body>
 </html>
