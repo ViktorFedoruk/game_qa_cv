@@ -286,7 +286,7 @@ function activateSection(sectionId) {
             {time: getFormattedTime(), ru: "Анализ навыков...", en: "Analyzing skills..."},
             {time: getFormattedTime(), ru: "Навыки загружены", en: "Skills loaded"},
             {time: getFormattedTime(), ru: "Готов к работе", en: "Ready for work"},
-            {time: getFormattedTime(), ru: "Соискатель обнаружен", en: "The applicant has been found"}
+            {time: getFormattedTime(), ru: "Пользователь обнаружен", en: "User detected"}
         ];
         
         // Добавляем начальные сообщения
@@ -397,4 +397,5 @@ function activateSection(sectionId) {
             element.textContent = element.textContent.replace('2025', new Date().getFullYear());
         }
     });
+
 });
