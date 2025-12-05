@@ -325,12 +325,12 @@ function activateSection(sectionId) {
         
      // Клик по консоли для добавления тестового лога
     let clickCount = 0;
-    const specialLogs = [
-        {ru: "Прекрати", en: "Stop it"},
-        {ru: "Что будет дальше?", en: "What will happen next?"},
-        {ru: "Может хватит уже?", en: "Maybe that's enough already?"},
-        {ru: "Хм, а ты упорный", en: "Hmm, you're persistent"},
-        {ru: "Не устал?:)", en: "Not tired yet?"}
+        const specialLogs = [
+        {ru: "Ого, дальше клики!", en: "Wow, more clicks!"},
+        {ru: "Любопытство рулит", en: "Curiosity rules"},
+        {ru: "Ещё один клик", en: "Another click"},
+        {ru: "Ты тестируешь меня", en: "You're testing me"},
+        {ru: "Веселье продолжается", en: "Fun goes on"}
     ];
 
     consoleOutput.addEventListener('click', function() {
