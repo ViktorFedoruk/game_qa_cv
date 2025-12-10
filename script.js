@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Инициализация подсчета длительности работы
         setupTimelineDurations();
+
+        // Инициализация подсчета общего опыта работы
+        setupExperienceDuration();
         
         // Консольное сообщение
         console.log('%c🚀 QA Game Tester CV Loaded', 'color: #0ea5e9; font-size: 16px; font-weight: bold;');
@@ -69,6 +72,19 @@ function setLanguage(lang) {
     // Применяем длительность на новом языке
     applyDurationLanguage(lang);
     saveLanguage(lang);
+    applyExperienceLanguage(lang);
+
+    // Выводим сообщение в терминал
+    const consoleOutput = document.getElementById('consoleOutput');
+    if (consoleOutput && typeof addLogEntry === 'function') {
+        const now = new Date();
+        const time = `[${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}]`;
+        const messages = {
+            ru: `Язык интерфейса изменён на: ${lang.toUpperCase()}`,
+            en: `Interface language switched to: ${lang.toUpperCase()}`
+        };
+        addLogEntry(time, messages.ru, messages.en);
+    }
 }
 
 function saveLanguage(lang) {
@@ -274,58 +290,61 @@ function activateSection(sectionId) {
     }
     
     // ===== КОНСОЛЬ =====
-    function setupConsole() {
-        const consoleOutput = document.getElementById('consoleOutput');
-        
-        // Функция для форматирования времени
-        function getFormattedTime() {
-            const now = new Date();
-            return `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}]`;
-        }
-        
-        // Начальные сообщения
-        const initialMessages = [
-            {time: getFormattedTime(), ru: "Система инициализирована", en: "System initialized"},
-            {time: getFormattedTime(), ru: "Загрузка профиля...", en: "Loading profile..."},
-            {time: getFormattedTime(), ru: "Профиль загружен", en: "Profile loaded"},
-            {time: getFormattedTime(), ru: "Анализ навыков...", en: "Analyzing skills..."},
-            {time: getFormattedTime(), ru: "Навыки загружены", en: "Skills loaded"},
-            {time: getFormattedTime(), ru: "Готов к работе", en: "Ready for work"},
-            {time: getFormattedTime(), ru: "Пользователь обнаружен", en: "User detected"}
-        ];
-        
-        // Добавляем начальные сообщения
-        initialMessages.forEach((msg, index) => {
-            setTimeout(() => {
-                addLogEntry(msg.time, msg.ru, msg.en);
-            }, index * 300);
-        });
-        
-        // Функция добавления записи в лог
-        function addLogEntry(time, ruText, enText) {
-            const logEntry = document.createElement('div');
-            logEntry.className = 'log-entry';
-            
-            logEntry.innerHTML = `
-                <span class="log-time">${time}</span>
-                <span class="ru-text">> ${ruText}</span>
-                <span class="en-text">> ${enText}</span>
-            `;
-            
-            consoleOutput.appendChild(logEntry);
-            
-            // Ограничиваем количество записей
-            if (consoleOutput.children.length > 10) {
-                consoleOutput.removeChild(consoleOutput.firstChild);
-            }
-            
-            // Прокрутка вниз
-            consoleOutput.scrollTop = consoleOutput.scrollHeight;
-        }
-        
-     // Клик по консоли для добавления тестового лога
+
+// Функция для форматирования времени
+function getFormattedTime() {
+    const now = new Date();
+    return `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}]`;
+}
+
+// Функция добавления записи в лог (глобальная)
+function addLogEntry(time, ruText, enText) {
+    const consoleOutput = document.getElementById('consoleOutput');
+    if (!consoleOutput) return;
+
+    const logEntry = document.createElement('div');
+    logEntry.className = 'log-entry';
+
+    logEntry.innerHTML = `
+        <span class="log-time">${time}</span>
+        <span class="ru-text">> ${ruText}</span>
+        <span class="en-text">> ${enText}</span>
+    `;
+
+    consoleOutput.appendChild(logEntry);
+
+    // Ограничиваем количество записей
+    if (consoleOutput.children.length > 10) {
+        consoleOutput.removeChild(consoleOutput.firstChild);
+    }
+
+    // Прокрутка вниз
+    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+}
+
+function setupConsole() {
+    const consoleOutput = document.getElementById('consoleOutput');
+
+    // Начальные сообщения
+    const initialMessages = [
+        {time: getFormattedTime(), ru: "Система инициализирована", en: "System initialized"},
+        {time: getFormattedTime(), ru: "Загрузка профиля...", en: "Loading profile..."},
+        {time: getFormattedTime(), ru: "Профиль загружен", en: "Profile loaded"},
+        {time: getFormattedTime(), ru: "Анализ навыков...", en: "Analyzing skills..."},
+        {time: getFormattedTime(), ru: "Навыки загружены", en: "Skills loaded"},
+        {time: getFormattedTime(), ru: "Готов к работе", en: "Ready for work"},
+        {time: getFormattedTime(), ru: "Пользователь обнаружен", en: "User detected"}
+    ];
+
+    initialMessages.forEach((msg, index) => {
+        setTimeout(() => {
+            addLogEntry(msg.time, msg.ru, msg.en);
+        }, index * 300);
+    });
+
+    // Клик по консоли для добавления тестового лога
     let clickCount = 0;
-        const specialLogs = [
+    const specialLogs = [
         {ru: "Ого, дальше клики!", en: "Wow, more clicks!"},
         {ru: "Любопытство рулит", en: "Curiosity rules"},
         {ru: "Ещё один клик", en: "Another click"},
@@ -336,7 +355,6 @@ function activateSection(sectionId) {
     consoleOutput.addEventListener('click', function() {
         clickCount++;
 
-        // Каждые 5 кликов выводим спец‑сообщение
         if (clickCount % 5 === 0) {
             const index = (clickCount / 5 - 1) % specialLogs.length;
             const specialLog = specialLogs[index];
@@ -349,12 +367,11 @@ function activateSection(sectionId) {
                 {ru: "Готов к новым задачам", en: "Ready for new tasks"},
                 {ru: "Камера и микрофон активированы", en: "The camera and microphone are activated"}
             ];
-            
             const randomLog = testLogs[Math.floor(Math.random() * testLogs.length)];
             addLogEntry(getFormattedTime(), randomLog.ru, randomLog.en);
         }
     });
-    }
+}
     
     // ===== ДОПОЛНИТЕЛЬНЫЕ ЭФФЕКТЫ =====
     // Анимация загрузки аватара
@@ -517,6 +534,78 @@ function setupTimelineDurations() {
 
 function applyDurationLanguage(lang) {
     document.querySelectorAll('.timeline-duration').forEach(el => {
+        if (el.dataset[lang]) {
+            el.textContent = el.dataset[lang];
+        }
+    });
+}
+
+// ===== АВТОМАТИЧЕСКИЙ ПОДСЧЁТ ОБЩЕГО ОПЫТА =====
+function setupExperienceDuration() {
+    const item = document.querySelector('.status-item[data-experience-start]');
+    if (!item) return;
+
+    const startAttr = item.getAttribute('data-experience-start');
+    if (!startAttr) return;
+
+    const startDate = new Date(startAttr);
+    const now = new Date();
+
+    // Считаем общее количество месяцев
+    let totalMonths = (now.getFullYear() - startDate.getFullYear()) * 12
+                    + (now.getMonth() - startDate.getMonth());
+
+    if (now.getDate() >= startDate.getDate()) {
+        totalMonths++;
+    }
+
+    let years = Math.floor(totalMonths / 12);
+    let months = totalMonths % 12;
+
+    // Сокращённые обозначения для маленького контейнера
+    function getRussianYearWord(count) {
+        return 'г.'; // единый вариант
+    }
+    function getRussianMonthWord(count) {
+        return 'м.'; // единый вариант
+    }
+    function getEnglishYearWord(count) {
+        return 'y.'; // единый вариант
+    }
+    function getEnglishMonthWord(count) {
+        return 'm.'; // единый вариант
+    }
+
+
+    // Форматируем строки
+    let ruText = '';
+    let enText = '';
+
+    if (years > 0 && months === 0) {
+        ruText = `${years} ${getRussianYearWord(years)}`;
+        enText = `${years} ${getEnglishYearWord(years)}`;
+    } else if (years > 0) {
+        ruText = `${years} ${getRussianYearWord(years)} ${months} ${getRussianMonthWord(months)}`;
+        enText = `${years} ${getEnglishYearWord(years)} ${months} ${getEnglishMonthWord(months)}`;
+    } else {
+        ruText = `${months} ${getRussianMonthWord(months)}`;
+        enText = `${months} ${getEnglishMonthWord(months)}`;
+    }
+
+    // Записываем в элемент
+    const valueEl = item.querySelector('.status-value');
+    if (valueEl) {
+        valueEl.dataset.ru = ruText;
+        valueEl.dataset.en = enText;
+
+        const currentLang = localStorage.getItem('cv_lang') || 'en';
+        valueEl.textContent = valueEl.dataset[currentLang];
+    }
+}
+
+// Переключение языка для опыта
+function applyExperienceLanguage(lang) {
+    document.querySelectorAll('.status-value').forEach(el => {
         if (el.dataset[lang]) {
             el.textContent = el.dataset[lang];
         }
