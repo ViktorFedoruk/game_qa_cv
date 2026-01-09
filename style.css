@@ -973,7 +973,8 @@ body {
     flex-direction: column;          /* элементы сверху вниз */
     justify-content: space-between;  /* описание сверху, банер снизу */
     background: rgba(14, 165, 233, 0.95);
-    border-radius: 12px;
+    border: 1px solid rgba(14, 165, 233, 0.25);
+    border-radius: 15px;
     padding: 15px;
     box-sizing: border-box;
 }
@@ -1968,3 +1969,4 @@ body {
     color: var(--space-white);
 
 }
+
