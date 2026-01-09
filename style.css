@@ -506,6 +506,12 @@ body {
     font-weight: 500;
 }
 
+.status-item.clickable {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
 .status-value {
     font-family: var(--font-heading);
     font-size: 1.3rem;
