@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Инициализация подсчета общего опыта работы
         setupExperienceDuration();
+
+        // Инициализация аватара 
+        setupAvatarOverlay();
         
         // Консольное сообщение
         console.log('%c🚀 QA Game Tester CV Loaded', 'color: #0ea5e9; font-size: 16px; font-weight: bold;');
@@ -610,6 +613,248 @@ function applyExperienceLanguage(lang) {
             el.textContent = el.dataset[lang];
         }
     });
+}
+
+//Всплывающий аватар
+function setupAvatarOverlay() {
+    console.log('🔧 Инициализация всплывающего аватара...');
+    
+    const avatarImage = document.querySelector('.avatar-image');
+    if (!avatarImage) {
+        console.warn('⚠️ Аватар не найден');
+        return;
+    }
+    
+    // Создаем оверлей, если его нет
+    if (!document.getElementById('avatarOverlay')) {
+        createAvatarOverlay();
+    }
+    
+    const overlay = document.getElementById('avatarOverlay');
+    const overlayImage = document.getElementById('overlayImage');
+    const overlayClose = document.getElementById('overlayClose');
+    const overlayBackdrop = document.querySelector('.overlay-backdrop');
+    
+    // Добавляем курсор
+    avatarImage.style.cursor = 'zoom-in';
+    
+    // Сохраняем данные для анимации
+    let animationData = {
+        startRect: null,
+        scrollTop: 0,
+        isAnimating: false,
+        scrollBlocked: false
+    };
+    
+    // Функция блокировки прокрутки (оставляем как было)
+    function blockPageScroll() {
+        if (animationData.scrollBlocked) return;
+        animationData.scrollBlocked = true;
+        // ... существующий код блокировки ...
+    }
+    
+    function unblockPageScroll() {
+        if (!animationData.scrollBlocked) return;
+        animationData.scrollBlocked = false;
+        // ... существующий код разблокировки ...
+    }
+    
+    // Обработчик открытия
+    avatarImage.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (animationData.isAnimating) return;
+        
+        // Анимация клика на аватаре
+        this.classList.add('clicking');
+        setTimeout(() => this.classList.remove('clicking'), 400);
+        
+        // Сохраняем позицию аватара
+        animationData.startRect = this.getBoundingClientRect();
+        animationData.scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Создаем эффект частиц
+        createParticles(animationData.startRect);
+        
+        // Блокируем прокрутку страницы
+        blockPageScroll();
+        
+        openAvatarOverlay();
+    });
+    
+    // Эффект частиц при открытии
+    function createParticles(rect) {
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        for (let i = 0; i < 8; i++) {
+            const particle = document.createElement('div');
+            const angle = (Math.PI * 2 * i) / 8;
+            const distance = 50 + Math.random() * 30;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            
+            particle.style.cssText = `
+                position: fixed;
+                left: ${centerX}px;
+                top: ${centerY}px;
+                width: 3px;
+                height: 3px;
+                background: linear-gradient(45deg, #4facfe, #00f2fe);
+                border-radius: 50%;
+                --tx: ${tx}px;
+                --ty: ${ty}px;
+                animation: particle 0.8s ease-out forwards;
+                z-index: 10003;
+                pointer-events: none;
+            `;
+            
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 800);
+        }
+    }
+    
+    function openAvatarOverlay() {
+        animationData.isAnimating = true;
+        
+        const startRect = animationData.startRect;
+        const scrollTop = animationData.scrollTop;
+        
+        // Позиция центра аватара
+        const startX = startRect.left + startRect.width / 2;
+        const startY = startRect.top + startRect.height / 2 + scrollTop;
+        
+        // Устанавливаем начальные стили
+        overlayImage.classList.add('no-transition');
+        overlayImage.style.cssText = `
+            left: ${startX}px;
+            top: ${startY}px;
+            width: ${startRect.width}px;
+            height: ${startRect.height}px;
+            transform: translate(-50%, -50%) scale(0.8) rotateX(10deg);
+            border-radius: 50%;
+            opacity: 0;
+            filter: blur(10px) brightness(1.5);
+        `;
+        
+        // Показываем оверлей
+        overlay.style.display = 'block';
+        
+        // Устанавливаем изображение
+        overlayImage.src = avatarImage.src;
+        overlayImage.alt = avatarImage.alt || 'Увеличенное фото';
+        
+        // Загружаем большое изображение
+        const highResSrc = avatarImage.dataset.highres || 
+                          avatarImage.dataset.original || 
+                          avatarImage.src.replace(/(\-small|\-thumb|thumbnail)/i, '');
+        
+        if (highResSrc && highResSrc !== avatarImage.src) {
+            const highResImg = new Image();
+            highResImg.onload = function() {
+                overlayImage.src = this.src;
+                console.log('✅ Большое изображение загружено');
+            };
+            highResImg.onerror = function() {
+                console.log('⚠️ Большое изображение не загрузилось');
+            };
+            highResImg.src = highResSrc;
+        }
+        
+        // Запускаем анимацию открытия
+        requestAnimationFrame(() => {
+            overlay.classList.add('active');
+            
+            requestAnimationFrame(() => {
+                overlayImage.classList.remove('no-transition');
+                
+                // Центрируем изображение
+                overlayImage.style.left = '50%';
+                overlayImage.style.top = '50%';
+                overlayImage.style.width = 'auto';
+                overlayImage.style.height = 'auto';
+                overlayImage.style.maxWidth = '85vw';
+                overlayImage.style.maxHeight = '85vh';
+                
+                // Применяем анимацию открытия
+                overlayImage.style.animation = 'avatarOpen 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+                overlayImage.style.borderRadius = '12px';
+                
+                // Добавляем свечение после анимации
+                setTimeout(() => {
+                    overlayImage.classList.add('glow');
+                }, 600);
+                
+                setTimeout(() => {
+                    animationData.isAnimating = false;
+                }, 800);
+            });
+        });
+    }
+    
+    function closeAvatarOverlay() {
+        if (animationData.isAnimating) return;
+        animationData.isAnimating = true;
+        
+        // Убираем свечение
+        overlayImage.classList.remove('glow');
+        
+        // Деактивируем оверлей
+        overlay.classList.remove('active');
+        
+        // Применяем анимацию закрытия (растворение)
+        overlayImage.style.animation = 'avatarClose 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+        
+        setTimeout(() => {
+            overlay.style.display = 'none';
+            
+            // Сбрасываем стили
+            overlayImage.style.cssText = '';
+            overlayImage.className = 'overlay-image';
+            overlayImage.style.animation = '';
+            
+            // Очищаем src
+            overlayImage.src = '';
+            
+            // Убираем фокус с крестика
+            overlayClose.blur();
+            
+            // Разблокируем прокрутку
+            unblockPageScroll();
+            
+            animationData.isAnimating = false;
+        }, 600);
+    }
+    
+    // Обработчики закрытия
+    overlayClose.addEventListener('click', closeAvatarOverlay);
+    overlayBackdrop.addEventListener('click', closeAvatarOverlay);
+    
+    // Закрытие по ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && overlay.classList.contains('active')) {
+            closeAvatarOverlay();
+        }
+    });
+    
+    // Предотвращаем закрытие при клике на изображение
+    overlayImage.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+    
+    // Добавляем обработчики для блокировки прокрутки на оверлее
+    overlay.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    
+    overlay.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    
+    console.log('✅ Всплывающий аватар инициализирован');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
