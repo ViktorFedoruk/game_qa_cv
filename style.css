@@ -972,7 +972,7 @@ body {
     display: flex;
     flex-direction: column;          /* элементы сверху вниз */
     justify-content: space-between;  /* описание сверху, банер снизу */
-    background: rgba(14, 165, 233, 0.1);
+    background: rgba(14, 165, 233, 0.95);
     border-radius: 12px;
     padding: 15px;
     box-sizing: border-box;
@@ -1966,4 +1966,5 @@ body {
 ::-moz-selection {
     background: rgba(14, 165, 233, 0.3);
     color: var(--space-white);
+
 }
