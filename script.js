@@ -197,76 +197,210 @@ function activateSection(sectionId) {
     }
     
     // ===== ЧАСТИЦЫ =====
-    function setupParticles() {
-        const particlesContainer = document.getElementById('particles');
-        const particleCount = 200;
+function setupParticles() {
+    const canvas = document.getElementById('particlesCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    let particlesArray = [];
+    // Сделали цвета чуть сочнее, чтобы они не терялись на темном фоне
+    const colors = ['#38bdf8', '#22d3ee', '#a78bfa', '#6366f1'];
+    
+    // Единый объект для мыши и тач-скрина
+    let pointer = { x: null, y: null, radius: 160, isTargeting: false };
+    
+    // Внутренний таймер для автоматических фоновых импульсов (чтобы сайт «дышал» сам по себе)
+    let autoPulseTimer = 0;
+
+    // Десктопные события
+    window.addEventListener('mousemove', (e) => { 
+        pointer.x = e.clientX; 
+        pointer.y = e.clientY; 
+        pointer.isTargeting = true;
+    });
+    window.addEventListener('mouseout', () => { pointer.isTargeting = false; });
+
+    // Мобильные события (Touch) — оживляют канвас при скролле и тапах
+    window.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 0) {
+            pointer.x = e.touches[0].clientX;
+            pointer.y = e.touches[0].clientY;
+            pointer.isTargeting = true;
+        }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 0) {
+            pointer.x = e.touches[0].clientX;
+            pointer.y = e.touches[0].clientY;
+            pointer.isTargeting = true;
+        }
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => { pointer.isTargeting = false; });
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            // Увеличили размер: теперь они варьируются от 1.2px до 3px (заметно, но аккуратно)
+            this.size = Math.random() * 1.8 + 1.2; 
+            
+            // Базовая скорость (чуть-чуть увеличили для живости)
+            this.speedX = (Math.random() - 0.5) * 0.4;
+            this.speedY = (Math.random() - 0.5) * 0.4;
+            
+            // Эффект мерцания (пульсация собственного размера и прозрачности)
+            this.blinkSpeed = Math.random() * 0.02 + 0.005;
+            this.blinkAngle = Math.random() * Math.PI;
+            
+            this.baseOpacity = Math.random() * 0.25 + 0.15; // Подняли минимальную видимость
+            this.opacity = this.baseOpacity;
+            this.color = colors[Math.floor(Math.random() * colors.length)];
+        }
         
-        for (let i = 0; i < particleCount; i++) {
-            createParticle(particlesContainer);
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+
+            if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+            if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+
+            // Естественное мерцание, чтобы частицы «жили», даже если экран никто не трогает
+            this.blinkAngle += this.blinkSpeed;
+            let currentBlink = Math.sin(this.blinkAngle) * 0.1;
+
+            // Взаимодействие с указателем (мышь или палец)
+            if (pointer.isTargeting && pointer.x && pointer.y) {
+                let dx = pointer.x - this.x;
+                let dy = pointer.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < pointer.radius) {
+                    // Сильное, но дорогое разгорание рядом с пальцем/курсором
+                    this.opacity = Math.min(0.9, this.opacity + 0.06);
+                    
+                    let force = (pointer.radius - distance) / pointer.radius;
+                    // Плавное выталкивание
+                    let directionX = (dx / distance) * force * 0.8;
+                    let directionY = (dy / distance) * force * 0.8;
+                    this.x -= directionX;
+                    this.y -= directionY;
+                } else if (this.opacity > this.baseOpacity) {
+                    this.opacity -= 0.01;
+                }
+            } else {
+                // Если интерактива нет, плавно возвращаем базовую прозрачность + эффект мерцания
+                let targetOpacity = this.baseOpacity + currentBlink;
+                if (this.opacity > targetOpacity) this.opacity -= 0.01;
+                else if (this.opacity < targetOpacity) this.opacity += 0.01;
+            }
+        }
+
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = this.opacity;
+            
+            // Секрет дороговизны: добавляем мягкое неоновое свечение (glow) для крупных частиц
+            if (this.size > 2.2 && this.opacity > 0.4) {
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = this.color;
+            } else {
+                ctx.shadowBlur = 0;
+            }
+
+            ctx.beginPath();
+            // На мобилках слегка увеличиваем визуальный размер за счет отрисовки
+            const renderSize = window.innerWidth < 768 ? this.size * 1.2 : this.size;
+            ctx.arc(this.x, this.y, renderSize, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Сбрасываем тень, чтобы она не размывала соединительные линии (важно для FPS!)
+            ctx.shadowBlur = 0;
         }
     }
+
+    // Рассчитываем количество: на мобилках плотность чуть выше относительно площади, чтобы паутина была сочной
+    const isMobile = window.innerWidth < 768;
+    const densityDivider = isMobile ? 10000 : 14000;
+    const numberOfParticles = Math.min(isMobile ? 65 : 120, Math.floor((canvas.width * canvas.height) / densityDivider));
     
-    function createParticle(container) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        
-        // Случайная позиция
-        const x = Math.random() * 100;
-        const y = Math.random() * 100;
-        
-        // Случайный размер
-        const size = Math.random() * 4 + 1;
-        
-        // Случайная прозрачность
-        const opacity = Math.random() * 0.4 + 0.1;
-        
-        // Случайный цвет
-        const colors = ['#0ea5e9', '#06b6d4', '#8b5cf6', '#10b981'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        
-        // Применение стилей
-        particle.style.cssText = `
-            position: absolute;
-            left: ${x}%;
-            top: ${y}%;
-            width: ${size}px;
-            height: ${size}px;
-            background: ${color};
-            border-radius: 50%;
-            opacity: ${opacity};
-            pointer-events: none;
-        `;
-        
-        container.appendChild(particle);
-        
-        // Анимация движения
-        animateParticle(particle);
+    for (let i = 0; i < numberOfParticles; i++) { 
+        particlesArray.push(new Particle()); 
     }
-    
-    function animateParticle(particle) {
-        let x = parseFloat(particle.style.left);
-        let y = parseFloat(particle.style.top);
-        const speedX = (Math.random() - 0.5) * 0.05;
-        const speedY = (Math.random() - 0.5) * 0.05;
+
+    function connectParticles() {
+        // На мобильных экранах делаем линии чуть короче, чтобы сетка была аккуратной
+        const maxDistance = isMobile ? 85 : 115; 
         
-        function move() {
-            x += speedX;
-            y += speedY;
-            
-            // Ограничение границ
-            if (x < -5) x = 105;
-            if (x > 105) x = -5;
-            if (y < -5) y = 105;
-            if (y > 105) y = -5;
-            
-            particle.style.left = `${x}%`;
-            particle.style.top = `${y}%`;
-            
-            requestAnimationFrame(move);
+        for (let a = 0; a < particlesArray.length; a++) {
+            for (let b = a + 1; b < particlesArray.length; b++) {
+                let dx = particlesArray[a].x - particlesArray[b].x;
+                let dy = particlesArray[a].y - particlesArray[b].y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < maxDistance) {
+                    let opacity = (1 - (distance / maxDistance)) * 0.16; // Сделали линии чуть контрастнее
+                    
+                    // Если есть активное касание или движение мыши, подсвечиваем связи сильнее
+                    if (pointer.isTargeting && pointer.x && pointer.y) {
+                        let mdx = pointer.x - particlesArray[a].x;
+                        let mdy = pointer.y - particlesArray[a].y;
+                        let mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+                        if (mDist < pointer.radius) {
+                            opacity *= 2.8; 
+                        }
+                    }
+
+                    ctx.strokeStyle = particlesArray[a].color;
+                    ctx.globalAlpha = opacity;
+                    ctx.lineWidth = isMobile ? 0.6 : 0.55; 
+                    ctx.beginPath();
+                    ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                    ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                    ctx.stroke();
+                }
+            }
         }
-        
-        move();
     }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Автоматический фоновый импульс (невидимая волна, пробегающая по экрану каждые 4 секунды)
+        // Она заставляет точки оживать волнами, даже если телефон лежит на столе
+        autoPulseTimer += 0.01;
+        if (!pointer.isTargeting) {
+            let waveX = (Math.sin(autoPulseTimer) * 0.5 + 0.5) * canvas.width;
+            let waveY = (Math.cos(autoPulseTimer * 0.7) * 0.5 + 0.5) * canvas.height;
+            
+            particlesArray.forEach(p => {
+                let dx = waveX - p.x;
+                let dy = waveY - p.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 130) {
+                    p.opacity = Math.min(0.6, p.opacity + 0.02);
+                }
+            });
+        }
+
+        particlesArray.forEach(p => { 
+            p.update(); 
+            p.draw(); 
+        });
+        
+        connectParticles();
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
     
     // ===== АНИМАЦИИ =====
     function setupAnimations() {
