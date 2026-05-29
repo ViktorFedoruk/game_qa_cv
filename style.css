@@ -1,11 +1,11 @@
 /* ===== БАЗОВЫЕ НАСТРОЙКИ ===== */
 :root {
     /* Sci-Fi цветовая палитра */
-    --space-black: #0a0e17;
-    --space-dark: #111827;
-    --space-blue: #0ea5e9;
-    --space-cyan: #06b6d4;
-    --space-purple: #8b5cf6;
+    --space-black: #060913;
+    --space-dark: #0d1220;
+    --space-blue: #38bdf8;
+    --space-cyan: #22d3ee;
+    --space-purple: #a78bfa;
     --space-green: #10b981;
     --space-orange: #f97316;
     --space-white: #f8fafc;
@@ -13,6 +13,8 @@
     --space-light-gray: #a3a8af;
     
     /* Градиенты */
+    --glass-bg: rgba(13, 18, 32, 0.45);
+    --glass-border:  rgba(56, 189, 248, 0.15);
     --gradient-space: linear-gradient(135deg, #0a0e17 0%, #1e293b 100%);
     --gradient-blue: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
     --gradient-cyan: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%);
@@ -2232,4 +2234,58 @@ body {
 ::-moz-selection {
     background: rgba(14, 165, 233, 0.3);
     color: var(--space-white);
+}
+
+/* Переделываем карточки под дорогое стекло */
+.advantage-card, .system-console, .tool-item {
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-border) !important;
+    border-radius: 16px !important; /* Более мягкие углы */
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important; /* Эластичная анимация */
+}
+
+/* Эффект при наведении */
+.advantage-card:hover {
+    border-color: rgba(34, 211, 238, 0.4) !important;
+    transform: translateY(-5px) scale(1.01) !important;
+    background: rgba(13, 18, 32, 0.6) !important;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(34, 211, 238, 0.1) !important;
+}
+
+h1.hero-title {
+    font-family: var(--font-heading);
+    font-size: 2.8rem !important;
+    font-weight: 600;
+    letter-spacing: 4px; /* Разрядка букв делает текст элитарным */
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent;
+}
+
+h2.hero-subtitle {
+    font-size: 1.2rem !important;
+    letter-spacing: 2px;
+    color: var(--space-light-gray);
+    text-transform: uppercase;
+    margin-top: 5px;
+}
+
+/* Теги навыков / Платформ */
+.tag {
+    background: rgba(56, 189, 248, 0.06) !important;
+    border: 1px solid rgba(56, 189, 248, 0.15) !important;
+    padding: 6px 14px !important;
+    font-family: var(--font-body);
+    font-size: 0.85rem !important;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease !important;
+}
+
+.tag:hover {
+    background: rgba(34, 211, 238, 0.15) !important;
+    border-color: var(--space-cyan) !important;
+    color: #fff !important;
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
 }
