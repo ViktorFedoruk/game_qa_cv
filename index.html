@@ -3,1101 +3,667 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QA Game Tester | Viktor Fedoruk</title>
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#0a0b10">
+    <title data-i18n="meta.title">QA Game Tester | Viktor Fedoruk</title>
+
+    <!-- SEO и мета-теги -->
+    <meta name="description" content="Portfolio of Viktor Fedoruk, QA Game Tester / QA Engineer. Testing mobile, PC and console games.">
+    <meta name="author" content="Viktor Fedoruk">
+    <meta property="og:title" content="QA Game Tester | Viktor Fedoruk">
+    <meta property="og:description" content="Portfolio of a QA engineer specializing in testing mobile and console games.">
+    <meta property="og:image" content="assets/avatar.jpg">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Шрифты и стили -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 </head>
-<body>
-    <!-- Фоновые элементы -->
-    <div class="bg-stars"></div>
-    <div class="bg-grid"></div>
-    <canvas id="particlesCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></canvas>
-    
-    <!-- Языковой переключатель -->
-    <div class="language-switcher">
-        <div class="lang-option active" data-lang="en">
-            <i class="fas fa-globe-americas"></i>
-            <span>EN</span>
-        </div>
-        <div class="lang-option" data-lang="ru">
-            <i class="fas fa-globe-europe"></i>
-            <span>RU</span>
-        </div>
+<body class="landing-theme">
+    <!-- Пропуск к содержимому -->
+    <a href="#hero" class="skip-link" data-i18n="a11y.skip">Skip to content</a>
+
+    <!-- Атмосферный фон: аурора, зерно и «пыль» глубины -->
+    <div class="bg-scene" aria-hidden="true">
+        <div class="aurora aurora-a"></div>
+        <div class="aurora aurora-b"></div>
+        <div class="aurora aurora-c"></div>
+        <div class="bg-grain"></div>
+        <canvas id="dustCanvas"></canvas>
     </div>
-    
-    <!-- Навигация -->
-    <nav class="main-nav" id="mainNav">
+
+    <!-- Переключатель языка -->
+    <div class="language-switcher" role="group" aria-label="Language selection" data-i18n-aria="a11y.lang_label">
+        <button class="lang-option active" data-lang="en" aria-pressed="true" aria-label="Switch language to English">
+            <i class="fas fa-globe-americas" aria-hidden="true"></i>
+            <span>EN</span>
+        </button>
+        <button class="lang-option" data-lang="ru" aria-pressed="false" aria-label="Переключить язык на русский">
+            <i class="fas fa-globe-europe" aria-hidden="true"></i>
+            <span>RU</span>
+        </button>
+    </div>
+
+    <!-- Навигационная панель -->
+    <nav class="main-nav" id="mainNav" aria-label="Main navigation" data-i18n-aria="a11y.nav_label">
         <div class="nav-header">
             <div class="nav-logo">
-                <i class="fas fa-terminal"></i>
-                <span class="nav-title ru-text">CV-PORTAL</span>
-                <span class="nav-title en-text">CV-PORTAL</span>
+                <div class="logo-icon"><i class="fas fa-terminal" aria-hidden="true"></i></div>
+                <span class="nav-title" data-i18n="nav.title">CV-PORTAL</span>
             </div>
             <div class="nav-status">
                 <div class="status-dot online"></div>
-                <span class="ru-text">Онлайн</span>
-                <span class="en-text">Online</span>
+                <span data-i18n="nav.status">Open to offers</span>
             </div>
         </div>
-        
+
         <ul class="nav-menu">
             <li>
-                <a href="#hero" class="nav-link active">
-                    <i class="fas fa-user-astronaut"></i>
-                    <span class="ru-text">Профиль</span>
-                    <span class="en-text">Profile</span>
+                <a href="#hero" class="nav-link active" aria-current="page">
+                    <i class="fas fa-user-astronaut" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav.profile">Profile</span>
                 </a>
             </li>
             <li>
                 <a href="#why" class="nav-link">
-                    <i class="fas fa-star"></i>
-                    <span class="ru-text">Преимущества</span>
-                    <span class="en-text">Advantages</span>
+                    <i class="fas fa-star" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav.advantages">Advantages</span>
                 </a>
             </li>
             <li>
                 <a href="#skills" class="nav-link">
-                    <i class="fas fa-cogs"></i>
-                    <span class="ru-text">Навыки</span>
-                    <span class="en-text">Skills</span>
+                    <i class="fas fa-cogs" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav.skills">Skills</span>
                 </a>
             </li>
             <li>
                 <a href="#experience" class="nav-link">
-                    <i class="fas fa-briefcase"></i>
-                    <span class="ru-text">Опыт</span>
-                    <span class="en-text">Experience</span>
+                    <i class="fas fa-briefcase" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav.experience">Experience</span>
                 </a>
             </li>
             <li>
                 <a href="#projects" class="nav-link">
-                    <i class="fas fa-gamepad"></i> 
-                    <span class="ru-text">Проекты</span> 
-                    <span class="en-text">Projects</span>
+                    <i class="fas fa-gamepad" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav.projects">Projects</span>
                 </a>
             </li>
             <li>
                 <a href="#tools" class="nav-link">
-                    <i class="fas fa-tools"></i>
-                    <span class="ru-text">Инструменты</span>
-                    <span class="en-text">Tools</span>
+                    <i class="fas fa-tools" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav.tools">Tools</span>
                 </a>
             </li>
             <li>
                 <a href="#education" class="nav-link">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span class="ru-text">Образование</span>
-                    <span class="en-text">Education</span>
+                    <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav.education">Education</span>
                 </a>
             </li>
             <li>
                 <a href="#contact" class="nav-link">
-                    <i class="fas fa-satellite"></i>
-                    <span class="ru-text">Контакты</span>
-                    <span class="en-text">Contacts</span>
+                    <i class="fas fa-satellite" aria-hidden="true"></i>
+                    <span class="nav-label" data-i18n="nav.contacts">Contacts</span>
                 </a>
             </li>
         </ul>
-        
+
         <div class="nav-footer">
             <div class="current-time" id="currentTime">
-                <i class="fas fa-clock"></i>
+                <i class="fas fa-clock" aria-hidden="true"></i>
                 <span>--:--:--</span>
             </div>
         </div>
     </nav>
 
-    <!-- Основной контент -->
-    <main class="main-content">
-        <!-- Секция: Герой -->
-        <section id="hero" class="section active">
-            <div class="hero-container">
+    <!-- Основной единый контент лендинга -->
+    <main class="main-content" id="mainContent">
+        <!-- 01. ПРОФИЛЬ (HERO) -->
+        <section id="hero" class="landing-section">
+            <div class="hero-card glass">
                 <div class="hero-grid">
-                    <div class="hero-avatar">
+                    <div class="hero-avatar-col">
                         <div class="avatar-container">
-                            <div class="avatar-hologram"></div>
-                            <img src="assets/avatar.jpg" alt="Виктор Федорук" class="avatar-image" 
-                                 onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=QAEngineer'">
-                            <div class="avatar-ring">
-                                <div class="ring-particle"></div>
-                                <div class="ring-particle"></div>
-                                <div class="ring-particle"></div>
-                            </div>
+                            <div class="avatar-glow"></div>
+                            <img src="assets/avatar.jpg" alt="Portrait of Viktor Fedoruk" class="avatar-image"
+                                 role="button" tabindex="0"
+                                 data-i18n-alt="a11y.avatar_alt"
+                                 data-i18n-aria="a11y.avatar_open">
                         </div>
-                        
-                        <div class="hero-status">
-                            <a href="#experience" class="status-item clickable" data-experience-start="2020-03-01">
-                                <i class="fas fa-calendar-alt"></i>
-                                <div>
-                                    <span class="ru-text">Опыт работы</span>
-                                    <span class="en-text">Experience</span>
-                                    <span class="status-value" data-ru="" data-en=""></span>
+
+                        <div class="hero-stats">
+                            <a href="#experience" class="stat-pill" data-experience-start="2020-03-01">
+                                <div class="stat-pill-header">
+                                    <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                                    <span class="stat-label" data-i18n="hero.exp_label">Experience</span>
                                 </div>
+                                <span class="status-value">6+ years</span>
                             </a>
-                            <a href="#projects" class="status-item clickable">
-                                <i class="fas fa-gamepad"></i>
-                                <div>
-                                    <span class="ru-text">Проекты</span>
-                                    <span class="en-text">Projects</span>
-                                    <span class="status-value">8</span>
+                            <a href="#projects" class="stat-pill">
+                                <div class="stat-pill-header">
+                                    <i class="fas fa-gamepad" aria-hidden="true"></i>
+                                    <span class="stat-label" data-i18n="hero.projects_label">Projects</span>
                                 </div>
+                                <span class="status-value">8</span>
                             </a>
-                            <a href="#tools" class="status-item clickable">
-                                <i class="fas fa-desktop"></i>
-                                <div>
-                                    <span class="ru-text">Платформы</span>
-                                    <span class="en-text">Platforms</span>
-                                    <span class="status-value">6</span>
+                            <a href="#tools" class="stat-pill">
+                                <div class="stat-pill-header">
+                                    <i class="fas fa-desktop" aria-hidden="true"></i>
+                                    <span class="stat-label" data-i18n="hero.platforms_label">Platforms</span>
                                 </div>
+                                <span class="status-value">6</span>
                             </a>
                         </div>
                     </div>
-                    
+
                     <div class="hero-info">
                         <div class="hero-badge">
-                            <i class="fas fa-shield-alt"></i>
-                            <span class="ru-text">QA ИНЖЕНЕР</span>
-                            <span class="en-text">QA ENGINEER</span>
+                            <span class="badge-dot"></span>
+                            <span data-i18n="hero.badge">QA ENGINEER</span>
                         </div>
-                        
-                        <h1 class="hero-title">
-                            <span class="ru-text">ВИКТОР ФЕДОРУК</span>
-                            <span class="en-text">VIKTOR FEDORUK</span>
-                        </h1>
-                        
-                        <h2 class="hero-subtitle">
-                            <span class="ru-text">Специалист по тестированию игр</span>
-                            <span class="en-text">Game Testing Specialist</span>
-                        </h2>
-                        
-                        <p class="hero-description ru-text">
-                            Специалист в области тестирования программного обеспечения и контроля качества в сфере игр.
-                            Обладаю глубокими знаниями в различных методологиях тестирования и богатым опытом работы
-                            с современными инструментами разработки.
+
+                        <h1 class="hero-title" data-i18n="hero.title">VIKTOR FEDORUK</h1>
+                        <h2 class="hero-subtitle" data-i18n="hero.subtitle">Game Testing Specialist</h2>
+
+                        <p class="hero-description" data-i18n="hero.description">
+                            Specialist in software testing and quality control in the field of games. Possess deep knowledge in various testing methodologies and extensive experience with modern development tools.
                         </p>
-                        <p class="hero-description en-text">
-                            Specialist in software testing and quality control in the field of games.
-                            Possess deep knowledge in various testing methodologies and extensive experience
-                            with modern development tools.
-                        </p>
-                        
+
                         <div class="hero-tags">
-                            <span class="tag"><i class="fas fa-bug"></i> <span class="ru-text">Тестирование игр</span><span class="en-text">Game Testing</span></span>
-                            <span class="tag"><i class="fas fa-mobile-alt"></i> <span class="ru-text">Мобильные платформы</span><span class="en-text">Mobile Platforms</span></span>
-                            <span class="tag"><i class="fas fa-tv"></i> <span class="ru-text">Консоли</span><span class="en-text">Consoles</span></span>
-                            <span class="tag"><i class="fas fa-desktop"></i> <span class="ru-text">ПК</span><span class="en-text">PC</span></span>
-                            <span class="tag"><i class="fas fa-chart-line"></i> <span class="ru-text">Контроль качества</span><span class="en-text">Quality Control</span></span>
+                            <span class="tag"><i class="fas fa-bug" aria-hidden="true"></i> <span data-i18n="hero.tags.game_testing">Game Testing</span></span>
+                            <span class="tag"><i class="fas fa-mobile-alt" aria-hidden="true"></i> <span data-i18n="hero.tags.mobile">Mobile Platforms</span></span>
+                            <span class="tag"><i class="fas fa-tv" aria-hidden="true"></i> <span data-i18n="hero.tags.consoles">Consoles</span></span>
+                            <span class="tag"><i class="fas fa-desktop" aria-hidden="true"></i> <span data-i18n="hero.tags.pc">PC</span></span>
+                            <span class="tag"><i class="fas fa-chart-line" aria-hidden="true"></i> <span data-i18n="hero.tags.qa_control">Quality Control</span></span>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Консоль с динамическим временем -->
-                <div class="system-console">
-                    <div class="console-header">
-                        <i class="fas fa-terminal"></i>
-                        <span class="ru-text">СИСТЕМНЫЙ ЖУРНАЛ</span>
-                        <span class="en-text">SYSTEM LOG</span>
-                    </div>
-                    <div class="console-output" id="consoleOutput">
-                        <!-- Записи будут добавлены динамически через JS -->
+
+                        <div class="hero-actions">
+                            <a href="#contact" class="btn btn-primary">
+                                <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                <span data-i18n="hero.cta_contact">Get In Touch</span>
+                            </a>
+                            <a href="#experience" class="btn btn-secondary">
+                                <i class="fas fa-arrow-down" aria-hidden="true"></i>
+                                <span data-i18n="hero.cta_experience">View Experience</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Секция: Преимущества -->
-        <section id="why" class="section">
+        <!-- 02. ПРЕИМУЩЕСТВА -->
+        <section id="why" class="landing-section">
             <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-rocket"></i>
-                    <span class="ru-text">ПОЧЕМУ Я</span>
-                    <span class="en-text">WHY ME</span>
-                </h2>
-                <p class="section-subtitle ru-text">
-                    Компетенции, которые делают меня ценным специалистом
-                </p>
-                <p class="section-subtitle en-text">
-                    Competencies that make me a valuable specialist
-                </p>
+                <h2 class="section-title" data-i18n="advantages.title">WHY ME</h2>
+                <p class="section-subtitle" data-i18n="advantages.subtitle">Competencies that make me a valuable specialist</p>
             </div>
-            
+
             <div class="advantages-grid">
-                <div class="advantage-card">
-                    <div class="advantage-icon">
-                        <i class="fas fa-puzzle-piece"></i>
+                <div class="advantage-card glass">
+                    <div class="advantage-icon"><i class="fas fa-puzzle-piece" aria-hidden="true"></i></div>
+                    <div class="card-content">
+                        <h3 data-i18n="advantages.card1.title">Complex Problem Solving</h3>
+                        <p data-i18n="advantages.card1.desc">Finding non-obvious bugs and edge cases in game mechanics, analyzing system interactions to identify root causes of problems.</p>
                     </div>
-                    <h3 class="ru-text">Решение сложных задач</h3>
-                    <h3 class="en-text">Complex Problem Solving</h3>
-                    <p class="ru-text">
-                        Нахожу неочевидные баги и edge-кейсы в игровой механике, 
-                        анализирую системные взаимодействия для выявления коренных причин проблем.
-                    </p>
-                    <p class="en-text">
-                        Finding non-obvious bugs and edge cases in game mechanics,
-                        analyzing system interactions to identify root causes of problems.
-                    </p>
                 </div>
-                
-                <div class="advantage-card">
-                    <div class="advantage-icon">
-                        <i class="fas fa-brain"></i>
+
+                <div class="advantage-card glass">
+                    <div class="advantage-icon"><i class="fas fa-brain" aria-hidden="true"></i></div>
+                    <div class="card-content">
+                        <h3 data-i18n="advantages.card2.title">Responsibility & Creativity</h3>
+                        <p data-i18n="advantages.card2.desc">Approaching testing as a creative process, developing unique verification scenarios and unconventional approaches to defect detection.</p>
                     </div>
-                    <h3 class="ru-text">Ответственность и креативность</h3>
-                    <h3 class="en-text">Responsibility & Creativity</h3>
-                    <p class="ru-text">
-                        Подхожу к тестированию как к творческому процессу, 
-                        разрабатываю уникальные сценарии проверки и нестандартные подходы к выявлению дефектов.
-                    </p>
-                    <p class="en-text">
-                        Approaching testing as a creative process,
-                        developing unique verification scenarios and unconventional approaches to defect detection.
-                    </p>
                 </div>
-                
-                <div class="advantage-card">
-                    <div class="advantage-icon">
-                        <i class="fas fa-graduation-cap"></i>
+
+                <div class="advantage-card glass">
+                    <div class="advantage-icon"><i class="fas fa-graduation-cap" aria-hidden="true"></i></div>
+                    <div class="card-content">
+                        <h3 data-i18n="advantages.card3.title">Continuous Learning</h3>
+                        <p data-i18n="advantages.card3.desc">Constantly learning new technologies and testing methodologies, taking advanced training courses and studying industry trends.</p>
                     </div>
-                    <h3 class="ru-text">Постоянное развитие</h3>
-                    <h3 class="en-text">Continuous Learning</h3>
-                    <p class="ru-text">
-                        Постоянно изучаю новые технологии и методологии тестирования, 
-                        прохожу курсы повышения квалификации и изучаю отраслевые тренды.
-                    </p>
-                    <p class="en-text">
-                        Constantly learning new technologies and testing methodologies,
-                        taking advanced training courses and studying industry trends.
-                    </p>
                 </div>
-                
-                <div class="advantage-card">
-                    <div class="advantage-icon">
-                        <i class="fas fa-binoculars"></i>
+
+                <div class="advantage-card glass">
+                    <div class="advantage-icon"><i class="fas fa-binoculars" aria-hidden="true"></i></div>
+                    <div class="card-content">
+                        <h3 data-i18n="advantages.card4.title">Trend Awareness</h3>
+                        <p data-i18n="advantages.card4.desc">Tracking IT technology progress and gaming industry trends, analyzing new tools and approaches to development and testing.</p>
                     </div>
-                    <h3 class="ru-text">Слежу за трендами</h3>
-                    <h3 class="en-text">Trend Awareness</h3>
-                    <p class="ru-text">
-                        Отслеживаю прогресс IT-технологий и игровой индустрии, 
-                        анализирую новые инструменты и подходы к разработке и тестированию.
-                    </p>
-                    <p class="en-text">
-                        Tracking IT technology progress and gaming industry trends,
-                        analyzing new tools and approaches to development and testing.
-                    </p>
                 </div>
-                
-                <div class="advantage-card">
-                    <div class="advantage-icon">
-                        <i class="fas fa-gamepad"></i>
+
+                <div class="advantage-card glass">
+                    <div class="advantage-icon"><i class="fas fa-gamepad" aria-hidden="true"></i></div>
+                    <div class="card-content">
+                        <h3 data-i18n="advantages.card5.title">Passion for Games</h3>
+                        <p data-i18n="advantages.card5.desc">Extensive experience across genres, deep understanding of game mechanics, player psychology, and game design principles.</p>
                     </div>
-                    <h3 class="ru-text">Страсть к играм</h3>
-                    <h3 class="en-text">Passion for Games</h3>
-                    <p class="ru-text">
-                        Большой опыт в различных жанрах, глубокое понимание игровых механик, 
-                        психологии игроков и принципов геймдизайна.
-                    </p>
-                    <p class="en-text">
-                        Extensive experience across genres, deep understanding of game mechanics,
-                        player psychology, and game design principles.
-                    </p>
                 </div>
-                
-                <div class="advantage-card">
-                    <div class="advantage-icon">
-                        <i class="fas fa-users"></i>
+
+                <div class="advantage-card glass">
+                    <div class="advantage-icon"><i class="fas fa-users" aria-hidden="true"></i></div>
+                    <div class="card-content">
+                        <h3 data-i18n="advantages.card6.title">Team Collaboration</h3>
+                        <p data-i18n="advantages.card6.desc">Effective communication with developers, designers, and producers, providing constructive feedback for product improvement.</p>
                     </div>
-                    <h3 class="ru-text">Командная работа</h3>
-                    <h3 class="en-text">Team Collaboration</h3>
-                    <p class="ru-text">
-                        Эффективная коммуникация с разработчиками, дизайнерами и продюсерами, 
-                        создание конструктивной обратной связи для улучшения продукта.
-                    </p>
-                    <p class="en-text">
-                        Effective communication with developers, designers, and producers,
-                        providing constructive feedback for product improvement.
-                    </p>
                 </div>
             </div>
         </section>
 
-        <!-- Секция: Навыки -->
-        <section id="skills" class="section">
+        <!-- 03. НАВЫКИ -->
+        <section id="skills" class="landing-section">
             <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-star"></i>
-                    <span class="ru-text">КЛЮЧЕВЫЕ НАВЫКИ</span>
-                    <span class="en-text">KEY SKILLS</span>
-                </h2>
+                <h2 class="section-title" data-i18n="skills.title">KEY SKILLS</h2>
             </div>
-            
+
             <div class="skills-grid">
-                <!-- Основные компетенции -->
-                <div class="skill-category">
+                <!-- Категория 1 -->
+                <div class="skill-category glass">
                     <div class="skill-category-header">
-                        <i class="fas fa-tasks"></i>
+                        <div class="cat-icon"><i class="fas fa-tasks" aria-hidden="true"></i></div>
                         <div>
-                            <h3 class="skill-category-title ru-text">Основные компетенции</h3>
-                            <h3 class="skill-category-title en-text">Core Competencies</h3>
-                            <p class="skill-category-subtitle ru-text">Профессиональные умения и экспертиза</p>
-                            <p class="skill-category-subtitle en-text">Professional skills and expertise</p>
+                            <h3 data-i18n="skills.category1.title">Core Competencies</h3>
+                            <p data-i18n="skills.category1.subtitle">Professional skills and expertise</p>
                         </div>
                     </div>
                     <div class="skill-list">
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-file-alt"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">Анализ проектной документации</span>
-                                    <span class="en-text">Project documentation analysis</span>
-                                </div>
-                                <div class="skill-description ru-text">Глубокий анализ требований, спецификаций и технической документации</div>
-                                <div class="skill-description en-text">Deep analysis of requirements, specifications and technical documentation</div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category1.item1_header">Project documentation analysis</div>
+                                <div class="item-desc" data-i18n="skills.category1.item1_desc">Deep analysis of requirements, specifications and technical documentation</div>
                             </div>
                         </div>
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-clipboard-check"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">Тест-документация</span>
-                                    <span class="en-text">Test documentation</span>
-                                </div>
-                                <div class="skill-description ru-text">Чек-листы, тест-кейсы, тест-планы, отчеты о тестировании</div>
-                                <div class="skill-description en-text">Checklists, test cases, test plans, test reports</div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category1.item2_header">Test documentation</div>
+                                <div class="item-desc" data-i18n="skills.category1.item2_desc">Checklists, test cases, test plans, test reports</div>
                             </div>
                         </div>
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-database"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">Системы управления тестированием</span>
-                                    <span class="en-text">Test management systems</span>
-                                </div>
-                                <div class="skill-description ru-text">QASE, TestRail, Jira Test Management</div>
-                                <div class="skill-description en-text">QASE, TestRail, Jira Test Management</div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category1.item3_header">Test management systems</div>
+                                <div class="item-desc" data-i18n="skills.category1.item3_desc">QASE, TestRail, Jira Test Management</div>
                             </div>
                         </div>
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-bug"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">Багрепортинг</span>
-                                    <span class="en-text">Bug reporting</span>
-                                </div>
-                                <div class="skill-description ru-text">JIRA, TeamWork, детализированные отчеты о дефектах</div>
-                                <div class="skill-description en-text">JIRA, TeamWork, detailed defect reports</div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category1.item4_header">Bug reporting</div>
+                                <div class="item-desc" data-i18n="skills.category1.item4_desc">JIRA, TeamWork, detailed defect reports</div>
                             </div>
                         </div>
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-comments"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">Коммуникация в команде</span>
-                                    <span class="en-text">Team communication</span>
-                                </div>
-                                <div class="skill-description ru-text">Эффективное взаимодействие с разработчиками и менеджерами</div>
-                                <div class="skill-description en-text">Effective interaction with developers and managers</div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category1.item5_header">Team communication</div>
+                                <div class="item-desc" data-i18n="skills.category1.item5_desc">Effective interaction with developers and managers</div>
                             </div>
                         </div>
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-robot"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">Применение AI в работе</span>
-                                    <span class="en-text">AI application in work</span>
-                                </div>
-                                <div class="skill-description ru-text">
-                                    Использование AI‑инструментов для оптимизации тестирования, анализа данных, совершенствования процессов и разработки собственных решений
-                                </div>
-                                <div class="skill-description en-text">
-                                    Leveraging AI tools for test optimization, data analysis, process improvement, and tool development
-                                </div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category1.item6_header">AI application in work</div>
+                                <div class="item-desc" data-i18n="skills.category1.item6_desc">Leveraging AI tools for test optimization, data analysis, process improvement, and tool development</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Игровое тестирование -->
-                <div class="skill-category">
+                <!-- Категория 2 -->
+                <div class="skill-category glass">
                     <div class="skill-category-header">
-                        <i class="fas fa-gamepad"></i>
+                        <div class="cat-icon"><i class="fas fa-gamepad" aria-hidden="true"></i></div>
                         <div>
-                            <h3 class="skill-category-title ru-text">Игровое тестирование</h3>
-                            <h3 class="skill-category-title en-text">Game Testing</h3>
-                            <p class="skill-category-subtitle ru-text">Тестирование мобильных и консольных игр</p>
-                            <p class="skill-category-subtitle en-text">Testing mobile and console games</p>
+                            <h3 data-i18n="skills.category2.title">Game Testing</h3>
+                            <p data-i18n="skills.category2.subtitle">Testing mobile and console games</p>
                         </div>
                     </div>
                     <div class="skill-list">
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-users"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">Тестирование игровых событий</span>
-                                    <span class="en-text">Game events testing</span>
-                                </div>
-                                <div class="skill-description ru-text">Проверка квестов, наград, таймингов и ротации событий</div>
-                                <div class="skill-description en-text">Verification of quests, rewards, event timing and rotation</div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category2.item1_header">Game events testing</div>
+                                <div class="item-desc" data-i18n="skills.category2.item1_desc">Verification of quests, rewards, event timing and rotation</div>
                             </div>
                         </div>
-
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-fist-raised"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">Боевые механики</span>
-                                    <span class="en-text">Combat mechanics</span>
-                                </div>
-                                <div class="skill-description ru-text">Проверка режимов, движения персонажей, стрельбы и способностей</div>
-                                <div class="skill-description en-text">Testing modes, character movement, shooting and abilities</div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category2.item2_header">Combat mechanics</div>
+                                <div class="item-desc" data-i18n="skills.category2.item2_desc">Testing modes, character movement, shooting and abilities</div>
                             </div>
                         </div>
-
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-robot"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">AI тестирование</span>
-                                    <span class="en-text">AI testing</span>
-                                </div>
-                                <div class="skill-description ru-text">Проверка поведения ботов, их взаимодействия с игроками</div>
-                                <div class="skill-description en-text">Checking bot behavior and interaction with players</div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category2.item3_header">AI testing</div>
+                                <div class="item-desc" data-i18n="skills.category2.item3_desc">Checking bot behavior and interaction with players</div>
                             </div>
                         </div>
-
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-magic"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">Тестирование игрового контента</span>
-                                    <span class="en-text">Game content testing</span>
-                                </div>
-                                <div class="skill-description ru-text">Проверка скинов, моделей, эффектов, анимаций и звуков</div>
-                                <div class="skill-description en-text">Testing skins, models, effects, animations and sounds</div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category2.item4_header">Game content testing</div>
+                                <div class="item-desc" data-i18n="skills.category2.item4_desc">Testing skins, models, effects, animations and sounds</div>
                             </div>
                         </div>
-
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-shopping-cart"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">Покупки и подписки</span>
-                                    <span class="en-text">Purchases & subscriptions</span>
-                                </div>
-                                <div class="skill-description ru-text">Проверка транзакций, покупок за реальную и внутриигровую валюту</div>
-                                <div class="skill-description en-text">Verification of transactions, purchases with real and in-game currency</div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category2.item5_header">Purchases & subscriptions</div>
+                                <div class="item-desc" data-i18n="skills.category2.item5_desc">Verification of transactions, purchases with real and in-game currency</div>
                             </div>
                         </div>
-
                         <div class="skill-item">
-                            <div class="skill-icon"><i class="fas fa-network-wired"></i></div>
-                            <div class="skill-content">
-                                <div class="skill-header">
-                                    <span class="ru-text">Мультиплеер и сетевые функции</span>
-                                    <span class="en-text">Multiplayer & networking</span>
-                                </div>
-                                <div class="skill-description ru-text">
-                                    Проверка матчмейкинга, стабильности соединения, синхронизации игроков и работы чата
-                                </div>
-                                <div class="skill-description en-text">
-                                    Testing matchmaking, connection stability, player synchronization, and chat functionality
-                                </div>
+                            <i class="fas fa-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <div class="item-header" data-i18n="skills.category2.item6_header">Multiplayer & networking</div>
+                                <div class="item-desc" data-i18n="skills.category2.item6_desc">Testing matchmaking, connection stability, player synchronization, and chat functionality</div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>    
-
-        <!-- Секция: Опыт работы -->
-        <section id="experience" class="section">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-briefcase"></i>
-                    <span class="ru-text">ОПЫТ РАБОТЫ</span>
-                    <span class="en-text">WORK EXPERIENCE</span>
-                </h2>
-            </div>
-            
-            <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-date" data-start="2021-03-01">
-                        <span class="ru-text">Март 2021 – Настоящее время</span>
-                        <span class="en-text">March 2021 – Present</span>
-                        <span class="timeline-duration" data-ru="" data-en=""></span>
-                    </div>
-                    <div class="timeline-content">
-                        <div class="timeline-header">
-                            <h3 class="company-name">Press Fire Games</h3>
-                            <div class="company-location">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span class="ru-text">Минск, Беларусь</span>
-                                <span class="en-text">Minsk, Belarus</span>
-                            </div>
-                        </div>
-                        
-                        <div class="position-title">
-                            <i class="fas fa-user-tie"></i>
-                            <span class="ru-text">QA Engineer / Тестировщик игр</span>
-                            <span class="en-text">QA Engineer / Game Tester</span>
-                        </div>
-                        
-                        <div class="project-description ru-text">
-                            Мануальное тестирование шутера для мобильных платформ (iOS/Android) 
-                            и спортивного симулятора для консолей X-Box и PS.
-                        </div>
-                        <div class="project-description en-text">
-                            Manual testing of a shooter for mobile platforms (iOS/Android)
-                            and a sports simulator for X-Box and PS consoles.
-                        </div>
-                        
-                        <div class="responsibilities">
-                            <h4 class="ru-text">Обязанности:</h4>
-                            <h4 class="en-text">Responsibilities:</h4>
-                            <ul>
-                                <li class="ru-text">Ведение тестовой документации (чек-листы, тест-кейсы)</li>
-                                <li class="en-text">Maintaining test documentation (checklists, test cases)</li>
-                                <li class="ru-text">UI/UX тестирование по макетам Figma</li>
-                                <li class="en-text">UI/UX testing based on Figma layouts</li>
-                                <li class="ru-text">Тестирование контента: модели, анимации, скины</li>
-                                <li class="en-text">Content testing: models, animations, skins</li>
-                                <li class="ru-text">Тестирование игровых событий и механик</li>
-                                <li class="en-text">Testing game events and mechanics</li>
-                                <li class="ru-text">Тестирование покупок и внутриигровых транзакций</li>
-                                <li class="en-text">Testing purchases and in-game transactions</li>
-                                <li class="ru-text">AI-тестирование поведения ботов</li>
-                                <li class="en-text">AI testing of bot behavior</li>
-                                <li class="ru-text">Регрессионное тестирование</li>
-                                <li class="en-text">Regression testing</li>
-                                <li class="ru-text">Тестирование боевых механик и игровых режимов</li>
-                                <li class="en-text">Testing combat mechanics and game modes</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="timeline-item">
-                    <div class="timeline-date" data-start="2020-03-01" data-end="2021-02-28">
-                        <span class="ru-text">Март 2020 – Февраль 2021</span>
-                        <span class="en-text">March 2020 – February 2021</span>
-                        <span class="timeline-duration" data-ru="" data-en=""></span>
-                    </div>
-                    <div class="timeline-content">
-                        <div class="timeline-header">
-                            <h3 class="company-name">Orangesoft</h3>
-                            <div class="company-location">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span class="ru-text">Брест, Беларусь</span>
-                                <span class="en-text">Brest, Belarus</span>
-                            </div>
-                        </div>
-                        
-                        <div class="position-title">
-                            <i class="fas fa-user-tie"></i>
-                            <span class="ru-text">QA Engineer</span>
-                            <span class="en-text">QA Engineer</span>
-                        </div>
-                        
-                        <div class="project-description ru-text">
-                            Мануальное тестирование мобильных приложений на платформах Android и iOS.
-                        </div>
-                        <div class="project-description en-text">
-                            Manual testing of mobile applications on Android and iOS platforms.
-                        </div>
-                        
-                        <div class="responsibilities">
-                            <h4 class="ru-text">Обязанности:</h4>
-                            <h4 class="en-text">Responsibilities:</h4>
-                            <ul>
-                                <li class="ru-text">Анализ проектной документации</li>
-                                <li class="en-text">Analysis of project documentation</li>
-                                <li class="ru-text">Подготовка тестовой документации</li>
-                                <li class="en-text">Preparation of test documentation</li>
-                                <li class="ru-text">Компиляция ключей локализации (Lokalise)</li>
-                                <li class="en-text">Compilation of localization keys (Lokalise)</li>
-                                <li class="ru-text">Написание баг-репортов (JIRA, TeamWork)</li>
-                                <li class="en-text">Writing bug reports (JIRA, TeamWork)</li>
-                                <li class="ru-text">Функциональное, регрессионное, UI/UX тестирование</li>
-                                <li class="en-text">Functional, regression, UI/UX testing</li>
-                                <li class="ru-text">Компонентное, интеграционное, системное тестирование</li>
-                                <li class="en-text">Component, integration, system testing</li>
-                            </ul>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Секция: Проекты -->
-        <section id="projects" class="section">
+        <!-- 04. ОПЫТ РАБОТЫ -->
+        <section id="experience" class="landing-section">
             <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-gamepad"></i>
-                    <span class="ru-text">ПРОЕКТЫ</span>
-                    <span class="en-text">PROJECTS</span>
-                </h2>
-                <p class="section-subtitle">
-                    <span class="ru-text">Мои основные игровые проекты</span>
-                    <span class="en-text">My main game projects</span>
-                </p>
+                <h2 class="section-title" data-i18n="experience.title">WORK EXPERIENCE</h2>
+            </div>
+
+            <div class="vertical-timeline-container">
+                <div class="timeline-laser-line"></div>
+
+                <div class="experience-card timeline-card glass">
+                    <div class="timeline-node"></div>
+                    <div class="exp-header">
+                        <div>
+                            <h3 class="company-name"><i class="fas fa-building" aria-hidden="true"></i> Press Fire Games</h3>
+                            <div class="position-title" data-i18n="experience.job1.position">QA Engineer / Game Tester</div>
+                        </div>
+                        <div class="exp-meta">
+                            <span class="exp-date" data-i18n="experience.job1.date">March 2021 – Present</span>
+                            <span class="timeline-duration" data-start="2021-03-01"></span>
+                            <span class="exp-location"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> <span data-i18n="experience.job1.location">Minsk, Belarus</span></span>
+                        </div>
+                    </div>
+                    <div class="project-description" data-i18n="experience.job1.description">
+                        Manual testing of a shooter for mobile platforms (iOS/Android) and a sports simulator for Xbox and PlayStation consoles.
+                    </div>
+                    <div class="responsibilities">
+                        <h4 data-i18n="experience.job1.responsibilities_title">Responsibilities:</h4>
+                        <div class="resp-grid">
+                            <span class="resp-tag" data-i18n="experience.job1.resp1">Maintaining test documentation</span>
+                            <span class="resp-tag" data-i18n="experience.job1.resp2">UI/UX testing based on Figma layouts</span>
+                            <span class="resp-tag" data-i18n="experience.job1.resp3">Content testing: models, animations, skins</span>
+                            <span class="resp-tag" data-i18n="experience.job1.resp4">Testing game events and mechanics</span>
+                            <span class="resp-tag" data-i18n="experience.job1.resp5">Testing purchases and in-game transactions</span>
+                            <span class="resp-tag" data-i18n="experience.job1.resp6">AI testing of bot behavior</span>
+                            <span class="resp-tag" data-i18n="experience.job1.resp7">Regression testing</span>
+                            <span class="resp-tag" data-i18n="experience.job1.resp8">Testing combat mechanics and game modes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="experience-card timeline-card glass">
+                    <div class="timeline-node"></div>
+                    <div class="exp-header">
+                        <div>
+                            <h3 class="company-name"><i class="fas fa-building" aria-hidden="true"></i> Orangesoft</h3>
+                            <div class="position-title" data-i18n="experience.job2.position">QA Engineer</div>
+                        </div>
+                        <div class="exp-meta">
+                            <span class="exp-date" data-i18n="experience.job2.date">March 2020 – February 2021</span>
+                            <span class="timeline-duration" data-start="2020-03-01" data-end="2021-02-28"></span>
+                            <span class="exp-location"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> <span data-i18n="experience.job2.location">Brest, Belarus</span></span>
+                        </div>
+                    </div>
+                    <div class="project-description" data-i18n="experience.job2.description">
+                        Manual testing of mobile applications on Android and iOS platforms.
+                    </div>
+                    <div class="responsibilities">
+                        <h4 data-i18n="experience.job2.responsibilities_title">Responsibilities:</h4>
+                        <div class="resp-grid">
+                            <span class="resp-tag" data-i18n="experience.job2.resp1">Analysis of project documentation</span>
+                            <span class="resp-tag" data-i18n="experience.job2.resp2">Preparation of test documentation</span>
+                            <span class="resp-tag" data-i18n="experience.job2.resp3">Compilation of localization keys (Lokalise)</span>
+                            <span class="resp-tag" data-i18n="experience.job2.resp4">Writing bug reports (JIRA, TeamWork)</span>
+                            <span class="resp-tag" data-i18n="experience.job2.resp5">Functional, regression, UI/UX testing</span>
+                            <span class="resp-tag" data-i18n="experience.job2.resp6">Component, integration, system testing</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 05. ПРОЕКТЫ -->
+        <section id="projects" class="landing-section">
+            <div class="section-header">
+                <h2 class="section-title" data-i18n="projects.title">PROJECTS</h2>
+                <p class="section-subtitle" data-i18n="projects.subtitle">My main game projects</p>
             </div>
 
             <div class="projects-grid">
-                <!-- Проект 1 -->
-                <div class="project-item">
-                    <h3 class="project-title">
-                        <a href="https://portal.uflgame.com/" target="_blank">
-                            <span class="ru-text">UFL</span>
-                            <span class="en-text">UFL</span>
-                        </a>
-                    </h3>
-
-                    <div class="project-platforms hero-tags"> 
-                        <span class="tag">
-                            <i class="fa-brands fa-xbox"></i> Xbox
-                        </span> <span class="tag">
-                            <i class="fa-brands fa-playstation"></i> PlayStation
-                        </span> <span class="tag">
-                            <i class="fab fa-windows"></i> PC
-                        </span> 
-                    </div>
-
-                    <p class="project-description ru-text">
-                        UFL — футбольный симулятор для X‑Box, PlayStation и PC.
-                    </p>
-                    <p class="project-description en-text">
-                        UFL is a football simulator for X‑Box, PlayStation and PC.
-                    </p>
-
-                    <p class="project-role ru-text">
-                        Моя роль: тестирование игровых механик (физика мяча, поведение игроков, правила матчей), сетевых функций матчей и матчмейкинга, UI/UX и звукового сопровождения (комментаторы, атмосфера стадиона), проверка контента (анимации, формы, логотипы), тестирование игровых ботов, проведение регрессионных тестов и проверка совместимости на разных платформах.
-                    </p>
-                    <p class="project-role en-text">
-                        My role: testing gameplay mechanics (ball physics, player behavior, match rules), match networking and matchmaking functions, UI/UX and audio support (commentary, stadium atmosphere), content validation (animations, kits, logos), testing game bots, performing regression tests, and verifying cross‑platform compatibility.
-                    </p>
-
-                    <a href="https://portal.uflgame.com/" target="_blank" class="project-banner">
-                        <img src="assets/project1-banner.jpg" alt="UFL Banner">
-                    </a>
-                </div>
-
-                <!-- Проект 2 -->
-                <div class="project-item">
-                    <h3 class="project-title">
-                        <a href="https://www.battleprime.com/" target="_blank">
-                            <span class="ru-text">Battle Prime</span>
-                            <span class="en-text">Battle Prime</span>
-                        </a>
-                    </h3>
-
-                    <div class="project-platforms hero-tags"> 
-                        <span class="tag">
-                            <i class="fab fa-apple"></i> iOS
-                        </span> <span class="tag">
-                            <i class="fab fa-android"></i> Android
-                        </span> 
-                    </div>
-
-                    <p class="project-description ru-text">
-                        Battle Prime — мобильный шутер для iOS/Android с динамичными PvP‑сражениями.
-                    </p>
-                    <p class="project-description en-text">
-                        Battle Prime is a mobile shooter for iOS/Android with dynamic PvP battles.
-                    </p>
-
-                    <p class="project-role ru-text">
-                        Моя роль: проверка контента (модели, анимации, скины), тестирование игровых механик, боевых режимов, UI/UX и внутриигровых транзакций, проверка локализации, тестирование игровых ботов и игровых квестов.
-                    </p>
-                    <p class="project-role en-text">
-                        My role: content validation (models, animations, skins), testing gameplay mechanics, combat modes, UI/UX, and in‑game transactions, localization testing, testing game bots and game quests.
-                    </p>
-
-                    <a href="https://www.battleprime.com/" target="_blank" class="project-banner">
-                        <img src="assets/project2-banner.jpeg" alt="Battle Prime Banner">
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- Секция: Инструменты -->
-        <section id="tools" class="section">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-tools"></i>
-                    <span class="ru-text">ИНСТРУМЕНТЫ</span>
-                    <span class="en-text">TOOLS</span>
-                </h2>
-            </div>
-            
-            <div class="tools-container">
-                <div class="tools-grid-expanded">
-                    <div class="tool-category">
-                        <div class="tool-category-header">
-                            <div class="tool-category-icon">
-                                <i class="fas fa-bug"></i>
-                            </div>
-                            <div class="tool-category-titles">
-                                <h3 class="ru-text">Тестирование и баг-трекинг</h3>
-                                <h3 class="en-text">Testing & Bug Tracking</h3>
-                            </div>
-                        </div>
-                        <div class="tool-list">
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fab fa-jira"></i>
-                                </div>
-                                <div class="tool-name">Atlassian Jira</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fas fa-chart-line"></i>
-                                </div>
-                                <div class="tool-name">TestRail</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fas fa-tasks"></i>
-                                </div>
-                                <div class="tool-name">QASE</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fa-brands fa-confluence"></i>
-                                </div>
-                                <div class="tool-name">Confluence</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                <div class="tool-name">TeamWork</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fas fa-chart-pie"></i>
-                                </div>
-                                <div class="tool-name">Allure TestOps</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="tool-category">
-                        <div class="tool-category-header">
-                            <div class="tool-category-icon">
-                                <i class="fas fa-code"></i>
-                            </div>
-                            <div class="tool-category-titles">
-                                <h3 class="ru-text">Разработка и отладка</h3>
-                                <h3 class="en-text">Development & Debugging</h3>
-                            </div>
-                        </div>
-                        <div class="tool-list">
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fa-solid fa-compass-drafting"></i>
-                                </div>
-                                <div class="tool-name">Android Studio</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fa-solid fa-hammer"></i>
-                                </div>
-                                <div class="tool-name">Xcode</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fas fa-code-branch"></i>
-                                </div>
-                                <div class="tool-name">GitHub / GitLab / Bitbucket / Sourcetree</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fa-brands fa-atlassian"></i>
-                                </div>
-                                <div class="tool-name">Bamboo</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fa-solid fa-gears"></i>
-                                </div>
-                                <div class="tool-name">Garlic</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fa-brands fa-jenkins"></i>
-                                </div>
-                                <div class="tool-name">Jenkins</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="tool-category">
-                        <div class="tool-category-header">
-                            <div class="tool-category-icon">
-                                <i class="fas fa-gamepad"></i>
-                            </div>
-                            <div class="tool-category-titles">
-                                <h3 class="ru-text">Движки и платформы</h3>
-                                <h3 class="en-text">Game Engines & Platforms</h3>
-                            </div>
-                        </div>
-                        <div class="tool-list">
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fas fa-cube"></i>
-                                </div>
-                                <div class="tool-name">Unreal Engine 5</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fa-brands fa-unity"></i>
-                                </div>
-                                <div class="tool-name">Unity</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fas fa-mobile-alt"></i>
-                                </div>
-                                <div class="tool-name">Android Virtual Device</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fab fa-google-play"></i>
-                                </div>
-                                <div class="tool-name">Google Play Console</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon">
-                                    <i class="fas fa-fire"></i>
-                                </div>
-                                <div class="tool-name">Firebase</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="tool-category">
-                        <div class="tool-category-header">
-                            <div class="tool-category-icon">
-                                <i class="fas fa-desktop"></i>
-                            </div>
-                            <div class="tool-category-titles">
-                                <h3 class="ru-text">OS и игровые платформы</h3>
-                                <h3 class="en-text">OS & Game Platforms</h3>
-                            </div>
-                        </div>
-                        <div class="tool-list">
-                            <div class="tool-item">
-                                <div class="tool-icon"><i class="fab fa-android"></i></div>
-                                <div class="tool-name">Android</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon"><i class="fab fa-apple"></i></div>
-                                <div class="tool-name">iOS</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon"><i class="fab fa-windows"></i></div>
-                                <div class="tool-name">Windows</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon"><i class="fab fa-apple"></i></div>
-                                <div class="tool-name">MacOS</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon"><i class="fa-brands fa-playstation"></i></div>
-                                <div class="tool-name">PlayStation</div>
-                            </div>
-                            <div class="tool-item">
-                                <div class="tool-icon"><i class="fa-brands fa-xbox"></i></div>
-                                <div class="tool-name">Xbox</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Секция: Образование -->
-        <section id="education" class="section">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span class="ru-text">ОБРАЗОВАНИЕ</span>
-                    <span class="en-text">EDUCATION</span>
-                </h2>
-            </div>
-            
-            <div class="education-grid">
-                <div class="education-card">
-                    <div class="education-icon">
-                        <i class="fas fa-laptop-code"></i>
-                    </div>
-                    <div class="education-content">
-                        <h3 class="institution-name">IT Academy</h3>
-                        <div class="education-details">
-                            <span class="ru-text">Курс по тестированию ПО</span>
-                            <span class="en-text">Software Testing Course</span>
-                            <span class="education-year">2020</span>
-                        </div>
-                        <p class="education-description ru-text">
-                            Сертифицированная программа по основам тестирования программного обеспечения, 
-                            включающая практические задания и проекты.
-                        </p>
-                        <p class="education-description en-text">
-                            Certified program on software testing fundamentals,
-                            including practical assignments and projects.
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="education-card">
-                    <div class="education-icon">
-                        <i class="fas fa-university"></i>
-                    </div>
-                    <div class="education-content">
-                        <h3 class="institution-name">
-                            <span class="ru-text">Брестский государственный технический университет</span>
-                            <span class="en-text">Brest State Technical University</span>
+                <div class="project-card glass">
+                    <div class="project-content">
+                        <h3 class="project-title">
+                            <a href="https://portal.uflgame.com/" target="_blank" rel="noopener noreferrer">
+                                <span>UFL</span> <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                            </a>
                         </h3>
-                        <div class="education-details">
-                            <span class="ru-text">Проектирование электротехники, электроники и систем связи</span>
-                            <span class="en-text">Electrical Engineering, Electronics and Communication Systems Design</span>
-                            <span class="education-year">2012 - 2016</span>
+                        <div class="project-tags">
+                            <span class="tag"><i class="fa-brands fa-xbox" aria-hidden="true"></i> Xbox</span>
+                            <span class="tag"><i class="fa-brands fa-playstation" aria-hidden="true"></i> PlayStation</span>
+                            <span class="tag"><i class="fab fa-windows" aria-hidden="true"></i> PC</span>
                         </div>
+                        <p class="project-description" data-i18n="projects.project1.desc">UFL is a football simulator for Xbox, PlayStation and PC.</p>
+                        <p class="project-role" data-i18n="projects.project1.role">My role: testing gameplay mechanics, match networking and matchmaking functions, UI/UX and audio support, content validation, testing game bots, performing regression tests, and verifying cross‑platform compatibility.</p>
                     </div>
+                    <a href="https://portal.uflgame.com/" target="_blank" rel="noopener noreferrer" class="project-banner">
+                        <img src="assets/project1-banner.jpg" alt="UFL Banner" loading="lazy" decoding="async">
+                    </a>
+                </div>
+
+                <div class="project-card glass">
+                    <div class="project-content">
+                        <h3 class="project-title">
+                            <a href="https://www.battleprime.com/" target="_blank" rel="noopener noreferrer">
+                                <span>Battle Prime</span> <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                            </a>
+                        </h3>
+                        <div class="project-tags">
+                            <span class="tag"><i class="fab fa-apple" aria-hidden="true"></i> iOS</span>
+                            <span class="tag"><i class="fab fa-android" aria-hidden="true"></i> Android</span>
+                        </div>
+                        <p class="project-description" data-i18n="projects.project2.desc">Battle Prime is a mobile shooter for iOS/Android with dynamic PvP battles.</p>
+                        <p class="project-role" data-i18n="projects.project2.role">My role: content validation, testing gameplay mechanics, combat modes, UI/UX, and in‑game transactions, localization testing, testing game bots and game quests.</p>
+                    </div>
+                    <a href="https://www.battleprime.com/" target="_blank" rel="noopener noreferrer" class="project-banner">
+                        <img src="assets/project2-banner.jpeg" alt="Battle Prime Banner" loading="lazy" decoding="async">
+                    </a>
                 </div>
             </div>
         </section>
 
-        <!-- Секция: Контакты -->
-        <section id="contact" class="section">
+        <!-- 06. ИНСТРУМЕНТЫ -->
+        <section id="tools" class="landing-section">
             <div class="section-header">
-                <h2 class="section-title">
-                    <i class="fas fa-satellite"></i>
-                    <span class="ru-text">КОНТАКТЫ</span>
-                    <span class="en-text">CONTACTS</span>
-                </h2>
-                <p class="section-subtitle ru-text">
-                    Свяжитесь со мной для обсуждения сотрудничества
-                </p>
-                <p class="section-subtitle en-text">
-                    Contact me to discuss cooperation
-                </p>
+                <h2 class="section-title" data-i18n="tools.title">TOOLS</h2>
             </div>
-            
-            <div class="contact-container">
-                <div class="contact-grid">
-                    
-                    <!-- Контакты -->
-                    <div class="contact-info">
-                        
-                        <!-- Email -->
-                        <div class="contact-item">
-                            <a href="mailto:victor.fedoruk1997@gmail.com" class="contact-card">
-                                <div class="contact-icon">
-                                    <i class="fas fa-envelope"></i>
-                                </div>
-                                <div class="contact-details">
-                                    <h3 class="ru-text">Email</h3>
-                                    <h3 class="en-text">Email</h3>
-                                    <p class="contact-link">victor.fedoruk1997@gmail.com</p>
-                                    <p class="contact-subtitle ru-text">Основной способ связи</p>
-                                    <p class="contact-subtitle en-text">Primary contact method</p>
-                                </div>
-                            </a>
-                        </div>
-                        
-                        <!-- LinkedIn -->
-                        <div class="contact-item">
-                            <a href="https://linkedin.com/in/vfedoruk" target="_blank" class="contact-card">
-                                <div class="contact-icon">
-                                    <i class="fab fa-linkedin"></i>
-                                </div>
-                                <div class="contact-details">
-                                    <h3 class="ru-text">LinkedIn</h3>
-                                    <h3 class="en-text">LinkedIn</h3>
-                                    <p class="contact-link">linkedin.com/in/vfedoruk</p>
-                                    <p class="contact-subtitle ru-text">Профессиональный профиль</p>
-                                    <p class="contact-subtitle en-text">Professional profile</p>
-                                </div>
-                            </a>
-                        </div>
-                        
-                        <!-- Telegram -->
-                        <div class="contact-item">
-                            <a href="https://t.me/mr_Bristle" target="_blank" class="contact-card">
-                                <div class="contact-icon">
-                                    <i class="fab fa-telegram"></i>
-                                </div>
-                                <div class="contact-details">
-                                    <h3 class="ru-text">Telegram</h3>
-                                    <h3 class="en-text">Telegram</h3>
-                                    <p class="contact-link">@mr_Bristle</p>
-                                    <p class="contact-subtitle ru-text">Быстрая связь</p>
-                                    <p class="contact-subtitle en-text">Quick communication</p>
-                                </div>
-                            </a>
-                        </div>
+
+            <div class="tools-grid">
+                <div class="tool-card glass">
+                    <div class="tool-card-header">
+                        <i class="fas fa-bug" aria-hidden="true"></i>
+                        <h3 data-i18n="tools.cat1">Testing & Bug Tracking</h3>
                     </div>
-                    
-                    <!-- Доступность -->
-                    <div class="contact-availability">
-                        <div class="availability-card">
-                            <div class="availability-header">
-                                <i class="fas fa-clock"></i>
-                                <div>
-                                    <span class="ru-text">Доступность</span>
-                                    <span class="en-text">Availability</span>
-                                </div>
-                            </div>
-                            <div class="availability-status">
-                                <div class="status-indicator active"></div>
-                                <span class="ru-text">Доступен для проектов</span>
-                                <span class="en-text">Available for projects</span>
-                            </div>
-                            <div class="availability-details">
-                                <p class="ru-text">
-                                    Открыт к предложениям по удаленной работе или контрактам.
-                                    Готов рассмотреть интересные проекты в игровой индустрии.
-                                </p>
-                                <p class="en-text">
-                                    Open to remote work or contract offers.
-                                    Ready to consider interesting projects in the gaming industry.
-                                </p>
-                            </div>
-                            <div class="availability-time">
-                                <i class="fas fa-calendar-check"></i>
-                                <span class="ru-text">Время ответа: 1-2 рабочих дня</span>
-                                <span class="en-text">Response time: 1-2 business days</span>
-                            </div>
-                        </div>
+                    <div class="tool-pills">
+                        <span class="tool-pill"><i class="fab fa-jira" aria-hidden="true"></i> Atlassian Jira</span>
+                        <span class="tool-pill"><i class="fas fa-chart-line" aria-hidden="true"></i> TestRail</span>
+                        <span class="tool-pill"><i class="fas fa-tasks" aria-hidden="true"></i> Qase</span>
+                        <span class="tool-pill"><i class="fa-brands fa-confluence" aria-hidden="true"></i> Confluence</span>
+                        <span class="tool-pill"><i class="fas fa-users" aria-hidden="true"></i> TeamWork</span>
+                        <span class="tool-pill"><i class="fas fa-chart-pie" aria-hidden="true"></i> Allure TestOps</span>
+                    </div>
+                </div>
+
+                <div class="tool-card glass">
+                    <div class="tool-card-header">
+                        <i class="fas fa-code" aria-hidden="true"></i>
+                        <h3 data-i18n="tools.cat2">Development & Debugging</h3>
+                    </div>
+                    <div class="tool-pills">
+                        <span class="tool-pill"><i class="fa-solid fa-compass-drafting" aria-hidden="true"></i> Android Studio</span>
+                        <span class="tool-pill"><i class="fa-solid fa-hammer" aria-hidden="true"></i> Xcode</span>
+                        <span class="tool-pill"><i class="fas fa-code-branch" aria-hidden="true"></i> Git / Bitbucket</span>
+                        <span class="tool-pill"><i class="fa-brands fa-atlassian" aria-hidden="true"></i> Bamboo</span>
+                        <span class="tool-pill"><i class="fa-solid fa-gears" aria-hidden="true"></i> Garlic</span>
+                        <span class="tool-pill"><i class="fa-brands fa-jenkins" aria-hidden="true"></i> Jenkins</span>
+                    </div>
+                </div>
+
+                <div class="tool-card glass">
+                    <div class="tool-card-header">
+                        <i class="fas fa-cube" aria-hidden="true"></i>
+                        <h3 data-i18n="tools.cat3">Game Engines & Platforms</h3>
+                    </div>
+                    <div class="tool-pills">
+                        <span class="tool-pill"><i class="fas fa-cube" aria-hidden="true"></i> Unreal Engine 5</span>
+                        <span class="tool-pill"><i class="fa-brands fa-unity" aria-hidden="true"></i> Unity</span>
+                        <span class="tool-pill"><i class="fas fa-mobile-alt" aria-hidden="true"></i> Android Emulator (AVD)</span>
+                        <span class="tool-pill"><i class="fab fa-google-play" aria-hidden="true"></i> Google Play Console</span>
+                        <span class="tool-pill"><i class="fas fa-fire" aria-hidden="true"></i> Firebase</span>
+                    </div>
+                </div>
+
+                <div class="tool-card glass">
+                    <div class="tool-card-header">
+                        <i class="fas fa-desktop" aria-hidden="true"></i>
+                        <h3 data-i18n="tools.cat4">OS & Game Platforms</h3>
+                    </div>
+                    <div class="tool-pills">
+                        <span class="tool-pill"><i class="fab fa-android" aria-hidden="true"></i> Android</span>
+                        <span class="tool-pill"><i class="fab fa-apple" aria-hidden="true"></i> iOS</span>
+                        <span class="tool-pill"><i class="fab fa-windows" aria-hidden="true"></i> Windows</span>
+                        <span class="tool-pill"><i class="fab fa-apple" aria-hidden="true"></i> macOS</span>
+                        <span class="tool-pill"><i class="fa-brands fa-playstation" aria-hidden="true"></i> PlayStation</span>
+                        <span class="tool-pill"><i class="fa-brands fa-xbox" aria-hidden="true"></i> Xbox</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Футер -->
-        <footer class="main-footer">
-            <div class="footer-content">
-                <div class="footer-info">
-                    <p class="ru-text">© 2026 Виктор Федорук. Все права защищены.</p>
-                    <p class="en-text">© 2026 Viktor Fedoruk. All rights reserved.</p>
-                    <p class="ru-text">Портфолио QA инженера, специализирующегося на тестировании игр</p>
-                    <p class="en-text">Portfolio of a QA engineer specializing in game testing</p>
+        <!-- 07. ОБРАЗОВАНИЕ -->
+        <section id="education" class="landing-section">
+            <div class="section-header">
+                <h2 class="section-title" data-i18n="education.title">EDUCATION</h2>
+            </div>
+
+            <div class="education-grid">
+                <div class="education-card glass">
+                    <div class="edu-icon"><i class="fas fa-laptop-code" aria-hidden="true"></i></div>
+                    <div>
+                        <h3>IT Academy</h3>
+                        <div class="edu-sub" data-i18n="education.course.title">Software Testing Course</div>
+                        <span class="edu-year">2020</span>
+                        <p data-i18n="education.course.desc">Certified program on software testing fundamentals, including practical assignments and projects.</p>
+                    </div>
+                </div>
+
+                <div class="education-card glass">
+                    <div class="edu-icon"><i class="fas fa-university" aria-hidden="true"></i></div>
+                    <div>
+                        <h3 data-i18n="education.university.name">Brest State Technical University</h3>
+                        <div class="edu-sub" data-i18n="education.university.specialty">Electrical Engineering, Electronics and Communication Systems Design</div>
+                        <span class="edu-year">2012 - 2016</span>
+                    </div>
                 </div>
             </div>
+        </section>
+
+        <!-- 08. КОНТАКТЫ -->
+        <section id="contact" class="landing-section">
+            <div class="section-header">
+                <h2 class="section-title" data-i18n="contact.title">CONTACTS</h2>
+                <p class="section-subtitle" data-i18n="contact.subtitle">Contact me to discuss cooperation</p>
+            </div>
+
+            <div class="contact-grid">
+                <div class="contact-cards">
+                    <a href="mailto:victor.fedoruk1997@gmail.com" class="contact-card glass">
+                        <div class="card-icon"><i class="fas fa-envelope" aria-hidden="true"></i></div>
+                        <div>
+                            <h3 data-i18n="contact.email_title">Email</h3>
+                            <div class="card-link">victor.fedoruk1997@gmail.com</div>
+                            <div class="card-sub" data-i18n="contact.email_sub">Primary contact method</div>
+                        </div>
+                    </a>
+                    <a href="https://linkedin.com/in/vfedoruk" target="_blank" rel="noopener noreferrer" class="contact-card glass">
+                        <div class="card-icon"><i class="fab fa-linkedin" aria-hidden="true"></i></div>
+                        <div>
+                            <h3>LinkedIn</h3>
+                            <div class="card-link">linkedin.com/in/vfedoruk</div>
+                            <div class="card-sub" data-i18n="contact.linkedin_sub">Professional profile</div>
+                        </div>
+                    </a>
+                    <a href="https://t.me/mr_Bristle" target="_blank" rel="noopener noreferrer" class="contact-card glass">
+                        <div class="card-icon"><i class="fab fa-telegram" aria-hidden="true"></i></div>
+                        <div>
+                            <h3>Telegram</h3>
+                            <div class="card-link">@mr_Bristle</div>
+                            <div class="card-sub" data-i18n="contact.telegram_sub">Quick communication</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="availability-card glass">
+                    <div class="avail-status">
+                        <div class="status-dot online"></div>
+                        <span data-i18n="contact.status">Available for projects</span>
+                    </div>
+                    <div class="avail-location">
+                        <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                        <span data-i18n="contact.location">Minsk, Belarus</span>
+                    </div>
+                    <p data-i18n="contact.details">Open to remote work or contract offers. Ready to consider interesting projects in the gaming industry.</p>
+                    <div class="avail-time">
+                        <i class="fas fa-clock" aria-hidden="true"></i>
+                        <span data-i18n="contact.response_time">Response time: 1-2 business days</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ФУТЕР -->
+        <footer class="main-footer">
+            <p data-i18n="footer.copyright" data-i18n-year="true">© 2026 Viktor Fedoruk. All rights reserved.</p>
+            <p data-i18n="footer.subtitle">Portfolio of a QA engineer specializing in game testing</p>
         </footer>
     </main>
 
     <!-- Скрипты -->
+    <script src="assets/translations.js" defer></script>
     <script src="script.js" defer></script>
 
     <!-- Всплывающее изображение аватара -->
-    <div class="avatar-overlay" id="avatarOverlay">
+    <div class="avatar-overlay" id="avatarOverlay" role="dialog" aria-modal="true" tabindex="-1"
+         aria-label="Enlarge photo" data-i18n-aria="a11y.avatar_open">
         <div class="overlay-backdrop"></div>
-        <img alt="Увеличенное фото" class="overlay-image" id="overlayImage">
-        <button class="overlay-close" id="overlayClose" aria-label="Закрыть">
-            <i class="fas fa-times"></i>
+        <img alt="Enlarged photo" class="overlay-image" id="overlayImage"
+             data-i18n-alt="a11y.overlay_alt">
+        <button class="overlay-close" id="overlayClose" aria-label="Close"
+                data-i18n-aria="a11y.overlay_close">
+            <i class="fas fa-times" aria-hidden="true"></i>
         </button>
     </div>
 </body>
