@@ -1,952 +1,592 @@
-// Основной скрипт для Sci-Fi CV сайта
+// Spatial Liquid Glass — single-page engine
+// i18n (single source: assets/translations.js), ambient canvas,
+// cursor light, magnetic buttons, accessible dialog.
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация
+(function () {
+    'use strict';
+
+    const root = document.documentElement;
+    const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const FINE_POINTER = window.matchMedia('(pointer: fine)').matches;
+
+    let translations = {};
+
+    // Safe localStorage (won't crash in private/blocked storage)
+    const store = {
+        get(key) { try { return localStorage.getItem(key); } catch (e) { return null; } },
+        set(key, val) { try { localStorage.setItem(key, val); } catch (e) { /* ignore */ } }
+    };
+
     init();
-    
+
     function init() {
-        // Установка языка
-        setupLanguage();
-        
-        // Инициализация навигации
-        setupNavigation();
-        
-        // Инициализация времени
-        setupTime();
-        
-        // Инициализация частиц
-        setupParticles();
-        
-        // Инициализация анимаций
-        setupAnimations();
-        
-        // Инициализация консоли
-        setupConsole();
-
-        // Инициализация подсчета длительности работы
-        setupTimelineDurations();
-
-        // Инициализация подсчета общего опыта работы
-        setupExperienceDuration();
-
-        // Инициализация аватара 
-        setupAvatarOverlay();
-
-        // Пересчёт длительностей при изменении размера окна
-        window.addEventListener('resize', setupTimelineDurations);
-        
-        // Консольное сообщение
-        console.log('%c🚀 QA Game Tester CV Loaded', 'color: #0ea5e9; font-size: 16px; font-weight: bold;');
-        console.log('%cSystem: Sci-Fi Interface Active', 'color: #06b6d4;');
+        initI18n();            // read translations, then set language
+        initApp();
     }
-    
-    // ===== НАСТРОЙКА ЯЗЫКА =====
-    function setupLanguage() {
-        const langOptions = document.querySelectorAll('.lang-option');
-        
-        // Проверяем сохранённый язык, иначе по умолчанию 'en'
-        const savedLang = localStorage.getItem('cv_lang');
-        const currentLang = savedLang || 'en';
-        
-        // Устанавливаем язык
-        setLanguage(currentLang);
-        
-        // Обработка кликов по переключателю языка
-        langOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const lang = this.dataset.lang;
-                setLanguage(lang);
-            });
+
+    function initApp() {
+        setupNavigation();
+        setupClock();
+        setupDustCanvas();
+        setupReveal();
+        setupLighting();
+        setupDurations();
+        setupAvatarOverlay();
+        setupMobileAutoHide();
+        console.log('%c✦ Spatial CV — QA Game Tester Portfolio', 'color:#38bdf8; font-size:14px; font-weight:bold;');
+    }
+
+    /* ==================== I18N ==================== */
+
+    function initI18n() {
+        const data = (typeof window.__I18N__ === 'object') ? window.__I18N__ : null;
+        if (data && data.ru && data.en) {
+            translations = data;
+        } else {
+            // Fall back to the English defaults already present in the HTML.
+            console.warn('[i18n] Translations unavailable, using built-in English defaults.');
+            translations = {};
+        }
+        setupLanguageSwitcher();
+    }
+
+    function getNested(obj, path) {
+        return path.split('.').reduce((p, c) => (p && p[c] !== undefined) ? p[c] : undefined, obj);
+    }
+
+    function setupLanguageSwitcher() {
+        const buttons = document.querySelectorAll('.lang-option');
+        const urlLang = new URLSearchParams(location.search).get('lang');
+
+        let lang = urlLang || store.get('cv_lang');
+        if (!lang) {
+            lang = (navigator.language || '').toLowerCase().startsWith('ru') ? 'ru' : 'en';
+        }
+        lang = (lang === 'ru') ? 'ru' : 'en';
+
+        setLanguage(lang);
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
         });
     }
 
     function setLanguage(lang) {
-        const html = document.getElementById('html');
-        const langOptions = document.querySelectorAll('.lang-option');
+        root.lang = lang;
+        root.classList.remove('lang-ru', 'lang-en');
+        root.classList.add('lang-' + lang);
 
-        if (!html) return;
-
-        html.className = `lang-${lang}`;
-
-        langOptions.forEach(option => {
-            option.classList.remove('active');
-            if (option.dataset.lang === lang) {
-                option.classList.add('active');
-            }
+        document.querySelectorAll('.lang-option').forEach(btn => {
+            const active = btn.dataset.lang === lang;
+            btn.classList.toggle('active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
 
-        // Применяем длительность на новом языке
+        store.set('cv_lang', lang);
+        applyDOMTranslations(lang);
         applyDurationLanguage(lang);
-        applyExperienceLanguage(lang);
-        saveLanguage(lang);
-
-        // Выводим сообщение в терминал
-        const consoleOutput = document.getElementById('consoleOutput');
-        if (consoleOutput && typeof addLogEntry === 'function') {
-            const now = new Date();
-            const time = `[${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}]`;
-            const messages = {
-                ru: `Язык интерфейса изменён на: ${lang.toUpperCase()}`,
-                en: `Interface language switched to: ${lang.toUpperCase()}`
-            };
-            addLogEntry(time, messages.ru, messages.en);
-        }
+        syncLangUrl(lang);
     }
 
-    function saveLanguage(lang) {
-        localStorage.setItem('cv_lang', lang);
+    function syncLangUrl(lang) {
+        try {
+            const url = new URL(location.href);
+            if (url.searchParams.get('lang') === lang) return;
+            url.searchParams.set('lang', lang);
+            history.replaceState(null, '', url);
+        } catch (e) { /* non-critical */ }
     }
 
-    // Скрытие переключателя при скролле
-    document.addEventListener("scroll", function() {
-        const switcher = document.querySelector(".language-switcher");
-        if (!switcher) return;
-        if (window.scrollY > 0) {
-            switcher.classList.add("hidden");
-        } else {
-            switcher.classList.remove("hidden");
+    function applyDOMTranslations(lang) {
+        const langData = translations[lang];
+        if (!langData) return;
+
+        if (langData.meta) {
+            if (langData.meta.title) document.title = langData.meta.title;
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc && langData.meta.description) metaDesc.setAttribute('content', langData.meta.description);
         }
-    });
-    
-    // ===== НАВИГАЦИЯ =====
+
+        const year = new Date().getFullYear();
+
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const val = getNested(langData, el.dataset.i18n);
+            if (val === undefined || val === null) return;
+            let text = String(val);
+            if (el.dataset.i18nYear === 'true') text = text.replace(/\{year\}/g, year);
+            const target = el.dataset.i18nTarget;
+            if (target === 'placeholder') el.placeholder = text;
+            else if (target === 'title') el.title = text;
+            else el.textContent = text;
+        });
+
+        document.querySelectorAll('[data-i18n-alt]').forEach(el => {
+            const val = getNested(langData, el.dataset.i18nAlt);
+            if (val !== undefined && val !== null) el.setAttribute('alt', String(val));
+        });
+
+        document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+            const val = getNested(langData, el.dataset.i18nAria);
+            if (val !== undefined && val !== null) el.setAttribute('aria-label', String(val));
+        });
+    }
+
+    /* ==================== NAVIGATION ==================== */
+
     function setupNavigation() {
         const navLinks = document.querySelectorAll('.nav-link');
-        const sections = document.querySelectorAll('.section');
+        const sections = document.querySelectorAll('.landing-section');
 
-        // Отключаем восстановление скролла браузером
-        if ('scrollRestoration' in history) {
-            history.scrollRestoration = 'manual';
-        }
-
-        function setActiveLink(targetId) {
+        function setActive(id) {
             navLinks.forEach(link => {
-                link.classList.toggle('active', link.getAttribute('href') === targetId);
+                const isActive = link.getAttribute('href') === '#' + id;
+                link.classList.toggle('active', isActive);
+                if (isActive) link.setAttribute('aria-current', 'page');
+                else link.removeAttribute('aria-current');
             });
         }
 
-        // Плавная прокрутка при клике
         navLinks.forEach(link => {
             link.addEventListener('click', e => {
-                e.preventDefault();
                 const targetId = link.getAttribute('href');
-                const targetSection = document.querySelector(targetId);
-                if (targetSection) {
-                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    setActiveLink(targetId);
-                    activateSection(targetId);
-                }
+                const target = document.querySelector(targetId);
+                if (!target) return;
+                e.preventDefault();
+                target.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' });
+                setActive(targetId.slice(1));
             });
         });
 
-        // Определение активной секции при скролле
         let ticking = false;
-        window.addEventListener('scroll', () => {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    const scrollPosition = window.scrollY + 150;
-                    let current = '';
-                    sections.forEach(sec => {
-                        const sectionTop = sec.offsetTop;
-                        const sectionHeight = sec.clientHeight;
-                        if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight - 100) {
-                            current = sec.id;
-                        }
-                    });
-                    if (current) {
-                        setActiveLink(`#${current}`);
-                        activateSection(`#${current}`);
+        function onScroll() {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(() => {
+                const scrollPos = window.scrollY + 140;
+                const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 140;
+                let current = sections.length ? sections[sections.length - 1].id : '';
+
+                if (!nearBottom) {
+                    for (const sec of sections) {
+                        const top = sec.offsetTop;
+                        const height = sec.offsetHeight;
+                        if (scrollPos >= top && scrollPos < top + height) { current = sec.id; break; }
                     }
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        }, { passive: true });
-
-        // При обновлении страницы всегда возвращаемся к первой секции
-        window.addEventListener('load', () => {
-            const hero = document.querySelector('#hero');
-            if (hero) {
-                hero.scrollIntoView({ behavior: 'auto', block: 'start' });
-                setActiveLink('#hero');
-                activateSection('#hero');
-            }
-        });
-    }
-
-    function activateSection(sectionId) {
-        const sections = document.querySelectorAll('.section');
-        sections.forEach(section => {
-            section.classList.remove('active');
-            if (section.id === sectionId.replace('#', '')) {
-                section.classList.add('active');
-            }
-        });
-    }
-    
-    // ===== ВРЕМЯ =====
-    function setupTime() {
-        const timeContainer = document.getElementById('currentTime');
-        if (!timeContainer) return;
-        const timeElement = timeContainer.querySelector('span');
-        if (!timeElement) return;
-        
-        function updateTime() {
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            
-            timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+                }
+                if (current) setActive(current);
+                ticking = false;
+            });
         }
-        
-        updateTime();
-        setInterval(updateTime, 1000);
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
     }
-    
-    // ===== ЧАСТИЦЫ =====
-    function setupParticles() {
-        const canvas = document.getElementById('particlesCanvas');
+
+    /* ==================== CLOCK ==================== */
+
+    function setupClock() {
+        const container = document.getElementById('currentTime');
+        if (!container) return;
+        const el = container.querySelector('span');
+        if (!el) return;
+
+        const update = () => {
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            el.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        };
+        update();
+        setInterval(update, 1000);
+    }
+
+    /* ==================== AMBIENT PARTICLE FIELD ==================== */
+
+    function setupDustCanvas() {
+        const canvas = document.getElementById('dustCanvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
 
-        let particlesArray = [];
-        const colors = ['#38bdf8', '#22d3ee', '#a78bfa', '#6366f1'];
-        
-        let pointer = { x: null, y: null, radius: 160, isTargeting: false };
-        let autoPulseTimer = 0;
+        let W = 0, H = 0;
+        let particles = [];
+        let rafId = null;
+        let lastT = 0;
 
-        window.addEventListener('mousemove', (e) => { 
-            pointer.x = e.clientX; 
-            pointer.y = e.clientY; 
-            pointer.isTargeting = true;
-        });
-        window.addEventListener('mouseout', () => { pointer.isTargeting = false; });
-
-        window.addEventListener('touchstart', (e) => {
-            if (e.touches.length > 0) {
-                pointer.x = e.touches[0].clientX;
-                pointer.y = e.touches[0].clientY;
-                pointer.isTargeting = true;
-            }
-        }, { passive: true });
-
-        window.addEventListener('touchmove', (e) => {
-            if (e.touches.length > 0) {
-                pointer.x = e.touches[0].clientX;
-                pointer.y = e.touches[0].clientY;
-                pointer.isTargeting = true;
-            }
-        }, { passive: true });
-
-        window.addEventListener('touchend', () => { pointer.isTargeting = false; });
+        const SPEC = [
+            { hex: '#67e8f9', rgba: 'rgba(103,232,249,' },
+            { hex: '#38bdf8', rgba: 'rgba(56,189,248,' },
+            { hex: '#34d399', rgba: 'rgba(52,211,153,' },
+            { hex: '#cbd5e1', rgba: 'rgba(203,213,225,' }
+        ];
 
         function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width = Math.round(W * dpr);
+            canvas.height = Math.round(H * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            build();
         }
-        window.addEventListener('resize', resize);
-        resize();
 
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 1.8 + 1.2;
-                
-                this.speedX = (Math.random() - 0.5) * 0.4;
-                this.speedY = (Math.random() - 0.5) * 0.4;
-                
-                this.blinkSpeed = Math.random() * 0.02 + 0.005;
-                this.blinkAngle = Math.random() * Math.PI;
-                
-                this.baseOpacity = Math.random() * 0.25 + 0.15;
-                this.opacity = this.baseOpacity;
-                this.color = colors[Math.floor(Math.random() * colors.length)];
-            }
-            
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
+        function build() {
+            const count = Math.min(100, Math.max(45, Math.round((W * H) / 15000)));
+            particles = Array.from({ length: count }, () => {
+                const orb = Math.random() < 0.16;
+                return {
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    r: orb ? 1.8 + Math.random() * 2.4 : 0.4 + Math.random() * 1.2,
+                    o: orb ? 0.05 + Math.random() * 0.07 : 0.07 + Math.random() * 0.26,
+                    rise: 0.05 + Math.random() * 0.15,
+                    swayA: 0.08 + Math.random() * 0.22,
+                    swayF: 0.15 + Math.random() * 0.35,
+                    twF: 0.3 + Math.random() * 0.6,
+                    ph: Math.random() * Math.PI * 2,
+                    spec: SPEC[(Math.random() * SPEC.length) | 0],
+                    orb: orb
+                };
+            });
+        }
 
-                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+        function draw(t, dt) {
+            ctx.clearRect(0, 0, W, H);
+            const tSec = t * 0.001;
 
-                this.blinkAngle += this.blinkSpeed;
-                let currentBlink = Math.sin(this.blinkAngle) * 0.1;
+            for (const p of particles) {
+                // gentle upward drift + organic lateral sway
+                p.y -= p.rise * dt;
+                p.x += Math.sin(tSec * p.swayF + p.ph) * p.swayA * dt;
 
-                if (pointer.isTargeting && pointer.x !== null && pointer.y !== null) {
-                    let dx = pointer.x - this.x;
-                    let dy = pointer.y - this.y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < pointer.radius) {
-                        this.opacity = Math.min(0.9, this.opacity + 0.06);
-                        
-                        let force = (pointer.radius - distance) / pointer.radius;
-                        let directionX = (dx / distance) * force * 0.8;
-                        let directionY = (dy / distance) * force * 0.8;
-                        this.x -= directionX;
-                        this.y -= directionY;
-                    } else if (this.opacity > this.baseOpacity) {
-                        this.opacity -= 0.01;
-                    }
-                } else {
-                    let targetOpacity = this.baseOpacity + currentBlink;
-                    if (this.opacity > targetOpacity) this.opacity -= 0.01;
-                    else if (this.opacity < targetOpacity) this.opacity += 0.01;
-                }
-            }
+                if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; }
+                else if (p.y > H + 10) { p.y = -10; }
+                if (p.x < -10) p.x = W + 10; else if (p.x > W + 10) p.x = -10;
 
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = this.opacity;
-                
-                if (this.size > 2.2 && this.opacity > 0.4) {
-                    ctx.shadowBlur = 8;
-                    ctx.shadowColor = this.color;
-                } else {
-                    ctx.shadowBlur = 0;
+                // soft twinkle
+                const tw = 0.62 + 0.38 * Math.sin(tSec * p.twF + p.ph);
+                const a = Math.max(0, Math.min(1, p.o * tw));
+
+                if (p.orb) {
+                    const rad = p.r * 5;
+                    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rad);
+                    g.addColorStop(0, p.spec.rgba + a.toFixed(3) + ')');
+                    g.addColorStop(1, p.spec.rgba + '0)');
+                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = g;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, rad, 0, Math.PI * 2);
+                    ctx.fill();
                 }
 
+                ctx.globalAlpha = a;
+                ctx.fillStyle = p.spec.hex;
                 ctx.beginPath();
-                const renderSize = window.innerWidth < 768 ? this.size * 1.2 : this.size;
-                ctx.arc(this.x, this.y, renderSize, 0, Math.PI * 2);
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
                 ctx.fill();
-                
-                ctx.shadowBlur = 0;
             }
+            ctx.globalAlpha = 1;
         }
 
-        const isMobile = window.innerWidth < 768;
-        const densityDivider = isMobile ? 10000 : 14000;
-        const numberOfParticles = Math.min(isMobile ? 65 : 120, Math.floor((canvas.width * canvas.height) / densityDivider));
-        
-        for (let i = 0; i < numberOfParticles; i++) { 
-            particlesArray.push(new Particle()); 
+        function loop(t) {
+            const dt = lastT ? Math.min(50, t - lastT) / 16.667 : 1;
+            lastT = t;
+            draw(t, dt);
+            rafId = requestAnimationFrame(loop);
         }
 
-        function connectParticles() {
-            const maxDistance = isMobile ? 85 : 115; 
-            
-            for (let a = 0; a < particlesArray.length; a++) {
-                for (let b = a + 1; b < particlesArray.length; b++) {
-                    let dx = particlesArray[a].x - particlesArray[b].x;
-                    let dy = particlesArray[a].y - particlesArray[b].y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance < maxDistance) {
-                        let opacity = (1 - (distance / maxDistance)) * 0.16;
-                        
-                        if (pointer.isTargeting && pointer.x !== null && pointer.y !== null) {
-                            let mdx = pointer.x - particlesArray[a].x;
-                            let mdy = pointer.y - particlesArray[a].y;
-                            let mDist = Math.sqrt(mdx * mdx + mdy * mdy);
-                            if (mDist < pointer.radius) {
-                                opacity *= 2.8; 
-                            }
-                        }
-
-                        ctx.strokeStyle = particlesArray[a].color;
-                        ctx.globalAlpha = opacity;
-                        ctx.lineWidth = isMobile ? 0.6 : 0.55; 
-                        ctx.beginPath();
-                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            autoPulseTimer += 0.01;
-            if (!pointer.isTargeting) {
-                let waveX = (Math.sin(autoPulseTimer) * 0.5 + 0.5) * canvas.width;
-                let waveY = (Math.cos(autoPulseTimer * 0.7) * 0.5 + 0.5) * canvas.height;
-                
-                particlesArray.forEach(p => {
-                    let dx = waveX - p.x;
-                    let dy = waveY - p.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 130) {
-                        p.opacity = Math.min(0.6, p.opacity + 0.02);
-                    }
-                });
-            }
-
-            particlesArray.forEach(p => { 
-                p.update(); 
-                p.draw(); 
-            });
-            
-            connectParticles();
-            requestAnimationFrame(animate);
-        }
-        animate();
-    }
-    
-    // ===== АНИМАЦИИ =====
-    function setupAnimations() {
-        const cards = document.querySelectorAll('.advantage-card, .education-card, .contact-item, .skill-item, .testing-type, .tool-item');
-        const cardObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
+        resize();
+        if (REDUCED) {
+            draw(0, 1); // single static frame
+        } else {
+            rafId = requestAnimationFrame(loop);
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+                    lastT = 0;
+                } else if (!rafId) {
+                    rafId = requestAnimationFrame(loop);
                 }
             });
-        }, {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
+        }
+
+        window.addEventListener('resize', () => {
+            resize();
+            if (REDUCED) draw(0, 1);
         });
-        
+    }
+
+    /* ==================== REVEAL ON SCROLL ==================== */
+
+    function setupReveal() {
+        if (REDUCED || !('IntersectionObserver' in window)) return;
+        const cards = document.querySelectorAll(
+            '.advantage-card, .education-card, .contact-card, .availability-card, .skill-category, .tool-card, .project-card, .experience-card'
+        );
+
+        const observer = new IntersectionObserver((entries, obs) => {
+            for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                entry.target.classList.add('is-visible');
+                obs.unobserve(entry.target);
+            }
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
         cards.forEach(card => {
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            cardObserver.observe(card);
+            card.classList.add('reveal');
+            observer.observe(card);
         });
     }
-    
-    // ===== КОНСОЛЬ =====
 
-    function getFormattedTime() {
-        const now = new Date();
-        return `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}]`;
-    }
+    /* ==================== LIGHTING: parallax, shimmer, magnetic ==================== */
 
-    function addLogEntry(time, ruText, enText) {
-        const consoleOutput = document.getElementById('consoleOutput');
-        if (!consoleOutput) return;
+    function setupLighting() {
+        if (!FINE_POINTER || REDUCED) return;
 
-        const logEntry = document.createElement('div');
-        logEntry.className = 'log-entry';
+        let px = 0, py = 0;
 
-        logEntry.innerHTML = `
-            <span class="log-time">${time}</span>
-            <span class="ru-text">> ${ruText}</span>
-            <span class="en-text">> ${enText}</span>
-        `;
+        window.addEventListener('pointermove', e => {
+            px = e.clientX;
+            py = e.clientY;
+        }, { passive: true });
 
-        consoleOutput.appendChild(logEntry);
+        // Ambient rotation of the iridescent border + background parallax.
+        function ambient(ts) {
+            const angle = (ts * 0.015) % 360; // one revolution per ~24s
+            root.style.setProperty('--angle', angle.toFixed(2) + 'deg');
 
-        if (consoleOutput.children.length > 10) {
-            consoleOutput.removeChild(consoleOutput.firstChild);
+            const nx = (px / window.innerWidth) * 2 - 1;
+            const ny = (py / window.innerHeight) * 2 - 1;
+            root.style.setProperty('--px', nx.toFixed(3));
+            root.style.setProperty('--py', ny.toFixed(3));
+
+            requestAnimationFrame(ambient);
         }
+        requestAnimationFrame(ambient);
 
-        consoleOutput.scrollTop = consoleOutput.scrollHeight;
-    }
-
-    function setupConsole() {
-        const consoleOutput = document.getElementById('consoleOutput');
-        if (!consoleOutput) return;
-
-        const initialMessages = [
-            {time: getFormattedTime(), ru: "Система инициализирована", en: "System initialized"},
-            {time: getFormattedTime(), ru: "Загрузка профиля...", en: "Loading profile..."},
-            {time: getFormattedTime(), ru: "Профиль загружен", en: "Profile loaded"},
-            {time: getFormattedTime(), ru: "Анализ навыков...", en: "Analyzing skills..."},
-            {time: getFormattedTime(), ru: "Навыки загружены", en: "Skills loaded"},
-            {time: getFormattedTime(), ru: "Готов к работе", en: "Ready for work"},
-            {time: getFormattedTime(), ru: "Пользователь обнаружен", en: "User detected"}
-        ];
-
-        initialMessages.forEach((msg, index) => {
-            setTimeout(() => {
-                addLogEntry(msg.time, msg.ru, msg.en);
-            }, index * 300);
+        // Per-card specular highlight (local coords).
+        document.querySelectorAll('.glass').forEach(card => {
+            card.addEventListener('pointermove', e => {
+                const r = card.getBoundingClientRect();
+                card.style.setProperty('--lx', (((e.clientX - r.left) / r.width) * 100).toFixed(2) + '%');
+                card.style.setProperty('--ly', (((e.clientY - r.top) / r.height) * 100).toFixed(2) + '%');
+            });
         });
 
-        let clickCount = 0;
-        const specialLogs = [
-            {ru: "Ого, дальше клики!", en: "Wow, more clicks!"},
-            {ru: "Любопытство рулит", en: "Curiosity rules"},
-            {ru: "Ещё один клик", en: "Another click"},
-            {ru: "Ты тестируешь меня", en: "You're testing me"},
-            {ru: "Веселье продолжается", en: "Fun goes on"}
-        ];
-        const testLogs = [
-            {ru: "Тестовая проверка... УСПЕШНО", en: "Test check... SUCCESS"},
-            {ru: "Анализ завершен", en: "Analysis complete"},
-            {ru: "Система стабильна", en: "System stable"},
-            {ru: "Готов к новым задачам", en: "Ready for new tasks"},
-            {ru: "Камера и микрофон активированы", en: "The camera and microphone are activated"}
-        ];
-
-        consoleOutput.addEventListener('click', function() {
-            clickCount++;
-
-            if (clickCount % 5 === 0) {
-                const index = (clickCount / 5 - 1) % specialLogs.length;
-                const specialLog = specialLogs[index];
-                addLogEntry(getFormattedTime(), specialLog.ru, specialLog.en);
-            } else {
-                const randomLog = testLogs[Math.floor(Math.random() * testLogs.length)];
-                addLogEntry(getFormattedTime(), randomLog.ru, randomLog.en);
-            }
+        // Magnetic buttons.
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('pointermove', e => {
+                const r = btn.getBoundingClientRect();
+                const dx = (e.clientX - (r.left + r.width / 2)) * 0.16;
+                const dy = (e.clientY - (r.top + r.height / 2)) * 0.26;
+                btn.style.setProperty('--mx', dx.toFixed(1) + 'px');
+                btn.style.setProperty('--my', dy.toFixed(1) + 'px');
+            });
+            btn.addEventListener('pointerleave', () => {
+                btn.style.setProperty('--mx', '0px');
+                btn.style.setProperty('--my', '0px');
+            });
         });
     }
-    
-    // ===== ДОПОЛНИТЕЛЬНЫЕ ЭФФЕКТЫ =====
-    // Анимация загрузки аватара
-    const avatarImg = document.querySelector('.avatar-image');
-    if (avatarImg) {
-        function showAvatar() {
-            avatarImg.style.opacity = '1';
-            avatarImg.style.transform = 'scale(1)';
-            avatarImg.classList.add('avatar-loaded');
-        }
 
-        avatarImg.addEventListener('load', showAvatar);
-        avatarImg.addEventListener('error', function() {
-            console.log('Аватар не загружен. Используется placeholder.');
-        });
+    /* ==================== DURATIONS ==================== */
 
-        avatarImg.style.opacity = '0';
-        avatarImg.style.transform = 'scale(0.8)';
-        avatarImg.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-
-        if (avatarImg.complete) {
-            showAvatar();
-        }
-    }
-    
-    // Параллакс эффект для фона
-    let lastX = 0;
-    let lastY = 0;
-    
-    window.addEventListener('mousemove', function(e) {
-        const deltaX = (e.clientX - lastX) * 0.05;
-        const deltaY = (e.clientY - lastY) * 0.05;
-        
-        const bgGrid = document.querySelector('.bg-grid');
-        if (bgGrid) {
-            const currentTransform = bgGrid.style.transform || 'translate(0px, 0px)';
-            const matches = currentTransform.match(/translate\(([-\d.]+)px, ([-\d.]+)px\)/);
-            
-            let currentX = 0;
-            let currentY = 0;
-            
-            if (matches) {
-                currentX = parseFloat(matches[1]);
-                currentY = parseFloat(matches[2]);
-            }
-            
-            const newX = Math.max(-20, Math.min(20, currentX + deltaX));
-            const newY = Math.max(-20, Math.min(20, currentY + deltaY));
-            
-            bgGrid.style.transform = `translate(${newX}px, ${newY}px)`;
-        }
-        
-        lastX = e.clientX;
-        lastY = e.clientY;
-    });
-    
-    // Инициализация текущего года в футере
-    const yearElements = document.querySelectorAll('.footer-info p:first-child');
-    yearElements.forEach(element => {
-        if (element.textContent.includes('2025')) {
-            element.textContent = element.textContent.replace('2025', new Date().getFullYear());
-        }
-    });
-
-    // ===== ОБЩИЙ РАСЧЁТ ДЛИТЕЛЬНОСТИ =====
-    function calculateDuration(startDate, endDate) {
-        let totalMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12
-                        + (endDate.getMonth() - startDate.getMonth());
-
-        // Если день окончания ещё не достиг дня начала — последний месяц неполный
-        if (endDate.getDate() < startDate.getDate()) {
-            totalMonths--;
-        }
-
-        if (totalMonths < 0) totalMonths = 0;
-
-        return {
-            years: Math.floor(totalMonths / 12),
-            months: totalMonths % 12
-        };
+    function parseDate(str) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, (m || 1) - 1, d || 1);
     }
 
-    // ===== АВТОМАТИЧЕСКИЙ ПОДСЧЁТ ДЛИТЕЛЬНОСТИ РАБОТЫ =====
-    function setupTimelineDurations() {
-        const items = document.querySelectorAll('.timeline-date[data-start]');
-        const now = new Date();
+    function calcDuration(startStr, endStr) {
+        const start = parseDate(startStr);
+        const end = endStr ? parseDate(endStr) : new Date();
+        let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+        if (end.getDate() >= start.getDate()) months++;
+        const years = Math.floor(months / 12);
+        return { years, months: months % 12 };
+    }
 
-        items.forEach(item => {
-            const startAttr = item.getAttribute('data-start');
-            const endAttr = item.getAttribute('data-end');
-            if (!startAttr) return;
+    function ruYear(c) { return c === 1 ? 'год' : (c >= 2 && c <= 4 ? 'года' : 'лет'); }
+    function ruMonth(c) { return c === 1 ? 'месяц' : (c >= 2 && c <= 4 ? 'месяца' : 'месяцев'); }
 
-            // Парсим даты
-            const startDate = new Date(startAttr);
-            const endDate = endAttr ? new Date(endAttr) : now;
+    function formatDuration(d, lang) {
+        const parts = [];
+        if (lang === 'ru') {
+            if (d.years) parts.push(d.years + ' ' + ruYear(d.years));
+            if (d.months) parts.push(d.months + ' ' + ruMonth(d.months));
+            if (!parts.length) parts.push('0 месяцев');
+        } else {
+            if (d.years) parts.push(d.years + (d.years === 1 ? ' year' : ' years'));
+            if (d.months) parts.push(d.months + (d.months === 1 ? ' month' : ' months'));
+            if (!parts.length) parts.push('0 months');
+        }
+        return parts.join(' ');
+    }
 
-            // Клонируем даты, чтобы не менять оригиналы
-            let tempStart = new Date(startDate);
-            let tempEnd = new Date(endDate);
-            
-            // Рассчитываем годы и месяцы через общее количество месяцев
-            let totalMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12
-                            + (endDate.getMonth() - startDate.getMonth());
+    function compactDuration(d, lang) {
+        if (lang === 'ru') {
+            const y = d.years ? `${d.years} ${ruYear(d.years)}` : '';
+            const m = d.months ? `${d.months} мес.` : '';
+            return [y, m].filter(Boolean).join(' ') || '0 мес.';
+        }
+        const y = d.years ? `${d.years} yr` : '';
+        const m = d.months ? `${d.months} mo` : '';
+        return [y, m].filter(Boolean).join(' ') || '0 mo';
+    }
 
-            // Если день окончания >= дня начала — считаем месяц завершённым
-            if (endDate.getDate() >= startDate.getDate()) {
-                totalMonths++;
-            }
-
-            let years = Math.floor(totalMonths / 12);
-            let months = totalMonths % 12;
-
-            
-            // Если месяцы стали отрицательными после коррекции по дням
-            if (months < 0) {
-                months += 12;
-                years--;
-            }
-
-            // Функции для склонения
-            function getRussianYearWord(count) {
-                if (count === 1) return 'год';
-                if (count >= 2 && count <= 4) return 'года';
-                return 'лет';
-            }
-
-            function getRussianMonthWord(count) {
-                if (count === 1) return 'месяц';
-                if (count >= 2 && count <= 4) return 'месяца';
-                return 'месяцев';
-            }
-
-            function getEnglishYearWord(count) {
-                return count === 1 ? 'year' : 'years';
-            }
-
-            function getEnglishMonthWord(count) {
-                return count === 1 ? 'month' : 'months';
-            }
-
-            // Форматируем текст с учетом склонений
-            let ruText = '';
-            let enText = '';
-
-            if (years > 0 && months === 0) {
-                // Только годы (ровно)
-                ruText = `${years} ${getRussianYearWord(years)}`;
-                enText = `${years} ${getEnglishYearWord(years)}`;
-            } else if (years > 0) {
-                // Годы и месяцы
-                ruText = `${years} ${getRussianYearWord(years)} ${months} ${getRussianMonthWord(months)}`;
-                enText = `${years} ${getEnglishYearWord(years)} ${months} ${getEnglishMonthWord(months)}`;
-            } else {
-                // Только месяцы
-                ruText = `${months} ${getRussianMonthWord(months)}`;
-                enText = `${months} ${getEnglishMonthWord(months)}`;
-            }
-
-            // Находим или создаем элемент для отображения
-            let durationEl = item.querySelector('.timeline-duration');
-            if (!durationEl) {
-                durationEl = document.createElement('span');
-                durationEl.className = 'timeline-duration';
-                item.appendChild(durationEl);
-            }
-
-            // Сохраняем данные для обоих языков
-            durationEl.dataset.ru = ruText;
-            durationEl.dataset.en = enText;
-            
-            // Устанавливаем текущий язык
-            const currentLang = localStorage.getItem('cv_lang') || 'en';
-            durationEl.textContent = durationEl.dataset[currentLang];
+    function setupDurations() {
+        document.querySelectorAll('.timeline-duration[data-start]').forEach(el => {
+            const d = calcDuration(el.dataset.start, el.dataset.end);
+            el.dataset.ru = formatDuration(d, 'ru');
+            el.dataset.en = formatDuration(d, 'en');
         });
+
+        const expPill = document.querySelector('.stat-pill[data-experience-start]');
+        if (expPill) {
+            const valueEl = expPill.querySelector('.status-value');
+            if (valueEl) {
+                const d = calcDuration(expPill.getAttribute('data-experience-start'), null);
+                valueEl.dataset.ru = compactDuration(d, 'ru');
+                valueEl.dataset.en = compactDuration(d, 'en');
+            }
+        }
+
+        applyDurationLanguage(currentLang());
     }
 
     function applyDurationLanguage(lang) {
-        document.querySelectorAll('.timeline-duration').forEach(el => {
-            if (el.dataset[lang]) {
-                el.textContent = el.dataset[lang];
-            }
+        document.querySelectorAll('.timeline-duration, .status-value').forEach(el => {
+            if (el.dataset[lang]) el.textContent = el.dataset[lang];
         });
     }
 
-    // ===== АВТОМАТИЧЕСКИЙ ПОДСЧЁТ ОБЩЕГО ОПЫТА =====
-    function setupExperienceDuration() {
-        const item = document.querySelector('.status-item[data-experience-start]');
-        if (!item) return;
-
-        const startAttr = item.getAttribute('data-experience-start');
-        if (!startAttr) return;
-
-        const startDate = new Date(startAttr);
-        const now = new Date();
-
-        // Считаем общее количество месяцев
-        let totalMonths = (now.getFullYear() - startDate.getFullYear()) * 12
-                        + (now.getMonth() - startDate.getMonth());
-
-        if (now.getDate() >= startDate.getDate()) {
-            totalMonths++;
-        }
-
-        let years = Math.floor(totalMonths / 12);
-        let months = totalMonths % 12;
-
-        // Сокращённые обозначения для маленького контейнера
-        function getRussianYearWord(count) {
-            return 'г.'; // единый вариант
-        }
-        function getRussianMonthWord(count) {
-            return 'м.'; // единый вариант
-        }
-        function getEnglishYearWord(count) {
-            return 'y.'; // единый вариант
-        }
-        function getEnglishMonthWord(count) {
-            return 'm.'; // единый вариант
-        }
-
-
-        // Форматируем строки
-        let ruText = '';
-        let enText = '';
-
-        if (years > 0 && months === 0) {
-            ruText = `${years} ${getRussianYearWord(years)}`;
-            enText = `${years} ${getEnglishYearWord(years)}`;
-        } else if (years > 0) {
-            ruText = `${years} ${getRussianYearWord(years)} ${months} ${getRussianMonthWord(months)}`;
-            enText = `${years} ${getEnglishYearWord(years)} ${months} ${getEnglishMonthWord(months)}`;
-        } else {
-            ruText = `${months} ${getRussianMonthWord(months)}`;
-            enText = `${months} ${getEnglishMonthWord(months)}`;
-        }
-
-        // Записываем в элемент
-        const valueEl = item.querySelector('.status-value');
-        if (valueEl) {
-            valueEl.dataset.ru = ruText;
-            valueEl.dataset.en = enText;
-
-            const currentLang = localStorage.getItem('cv_lang') || 'en';
-            valueEl.textContent = valueEl.dataset[currentLang];
-        }
+    function currentLang() {
+        return store.get('cv_lang') || (root.lang === 'ru' ? 'ru' : 'en');
     }
 
-    // Переключение языка для опыта
-    function applyExperienceLanguage(lang) {
-        document.querySelectorAll('.status-value').forEach(el => {
-            if (el.dataset[lang]) {
-                el.textContent = el.dataset[lang];
+    /* ==================== MOBILE AUTO-HIDE (nav + language switcher) ==================== */
+
+    function setupMobileAutoHide() {
+        const mq = window.matchMedia('(max-width: 768px)');
+        const nav = document.getElementById('mainNav');
+        const switcher = document.querySelector('.language-switcher');
+        if (!nav || !switcher) return;
+
+        let lastY = window.scrollY;
+        let hidden = false;
+
+        function update() {
+            const y = window.scrollY;
+            const delta = y - lastY;
+            lastY = y;
+
+            if (!mq.matches) {
+                if (hidden) {
+                    nav.classList.remove('hidden');
+                    switcher.classList.remove('hidden');
+                    hidden = false;
+                }
+                return;
             }
-        });
+
+            if (y <= 8 || delta < -6) {
+                if (hidden) {
+                    nav.classList.remove('hidden');
+                    switcher.classList.remove('hidden');
+                    hidden = false;
+                }
+            } else if (delta > 6 && y > 96) {
+                if (!hidden) {
+                    nav.classList.add('hidden');
+                    switcher.classList.add('hidden');
+                    hidden = true;
+                }
+            }
+        }
+
+        window.addEventListener('scroll', update, { passive: true });
+        mq.addEventListener('change', update);
+        update();
     }
 
-    // ===== Всплывающий аватар =====
+    /* ==================== AVATAR + OVERLAY DIALOG ==================== */
+
     function setupAvatarOverlay() {
-        const avatarImage = document.querySelector('.avatar-image');
-        if (!avatarImage) {
-            console.warn('⚠️ Аватар не найден');
-            return;
-        }
-
+        const avatar = document.querySelector('.avatar-image');
         const overlay = document.getElementById('avatarOverlay');
         const overlayImage = document.getElementById('overlayImage');
-        const overlayClose = document.getElementById('overlayClose');
-        const overlayBackdrop = document.querySelector('.overlay-backdrop');
+        const closeBtn = document.getElementById('overlayClose');
+        const backdrop = document.querySelector('.overlay-backdrop');
+        if (!avatar || !overlay || !overlayImage || !closeBtn || !backdrop) return;
 
-        if (!overlay || !overlayImage || !overlayClose || !overlayBackdrop) {
-            console.warn('⚠️ Элементы оверлея не найдены');
-            return;
+        // Entrance fade once loaded
+        function showAvatar() {
+            avatar.style.opacity = '1';
+            avatar.style.transform = 'scale(1)';
+        }
+        avatar.addEventListener('load', showAvatar);
+        avatar.style.opacity = '0';
+        avatar.style.transform = 'scale(.85)';
+        avatar.style.transition = 'opacity .8s ease, transform .8s ease';
+        if (avatar.complete) showAvatar();
+
+        // Offline-safe fallback
+        avatar.addEventListener('error', function onError() {
+            avatar.removeEventListener('error', onError);
+            avatar.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=QAEngineer';
+        });
+
+        let lastFocus = null;
+
+        function setBackgroundInert(inert) {
+            const main = document.getElementById('mainContent');
+            const nav = document.getElementById('mainNav');
+            const switcher = document.querySelector('.language-switcher');
+            if (main) main.inert = inert;
+            if (nav) nav.inert = inert;
+            if (switcher) switcher.inert = inert;
         }
 
-        avatarImage.style.cursor = 'zoom-in';
-
-        const animationData = {
-            startRect: null,
-            isAnimating: false,
-            scrollBlocked: false
-        };
-
-        function blockPageScroll() {
-            if (animationData.scrollBlocked) return;
-            animationData.scrollBlocked = true;
+        function open() {
+            lastFocus = document.activeElement;
+            overlayImage.src = avatar.currentSrc || avatar.src;
+            overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
+            setBackgroundInert(true);
+            closeBtn.focus();
         }
 
-        function unblockPageScroll() {
-            if (!animationData.scrollBlocked) return;
-            animationData.scrollBlocked = false;
-            document.body.style.overflow = '';
-        }
-
-        // Эффект частиц при открытии
-        function createParticles(rect) {
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            for (let i = 0; i < 8; i++) {
-                const particle = document.createElement('div');
-                const angle = (Math.PI * 2 * i) / 8;
-                const distance = 50 + Math.random() * 30;
-                const tx = Math.cos(angle) * distance;
-                const ty = Math.sin(angle) * distance;
-                
-                particle.style.cssText = `
-                    position: fixed;
-                    left: ${centerX}px;
-                    top: ${centerY}px;
-                    width: 3px;
-                    height: 3px;
-                    background: linear-gradient(45deg, #4facfe, #00f2fe);
-                    border-radius: 50%;
-                    --tx: ${tx}px;
-                    --ty: ${ty}px;
-                    animation: particle 0.8s ease-out forwards;
-                    z-index: 10003;
-                    pointer-events: none;
-                `;
-                
-                document.body.appendChild(particle);
-                setTimeout(() => particle.remove(), 800);
-            }
-        }
-
-        // Обработчик открытия
-        avatarImage.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (animationData.isAnimating) return;
-            
-            this.classList.add('clicking');
-            setTimeout(() => this.classList.remove('clicking'), 400);
-            
-            animationData.startRect = this.getBoundingClientRect();
-            
-            createParticles(animationData.startRect);
-            
-            blockPageScroll();
-            
-            openAvatarOverlay();
-        });
-
-        function openAvatarOverlay() {
-            animationData.isAnimating = true;
-            
-            const startRect = animationData.startRect;
-            
-            // Позиция центра аватара — координаты относительно viewport,
-            // так как .avatar-overlay имеет position: fixed
-            const startX = startRect.left + startRect.width / 2;
-            const startY = startRect.top + startRect.height / 2;
-            
-            overlayImage.classList.add('no-transition');
-            overlayImage.style.cssText = `
-                left: ${startX}px;
-                top: ${startY}px;
-                width: ${startRect.width}px;
-                height: ${startRect.height}px;
-                transform: translate(-50%, -50%) scale(0.8) rotateX(10deg);
-                border-radius: 50%;
-                opacity: 0;
-                filter: blur(10px) brightness(1.5);
-            `;
-            
-            overlay.style.display = 'block';
-            
-            overlayImage.src = avatarImage.src;
-            overlayImage.alt = avatarImage.alt || 'Увеличенное фото';
-            
-            const highResSrc = avatarImage.dataset.highres || 
-                              avatarImage.dataset.original || 
-                              avatarImage.src.replace(/(\-small|\-thumb|thumbnail)/i, '');
-            
-            if (highResSrc && highResSrc !== avatarImage.src) {
-                const highResImg = new Image();
-                highResImg.onload = function() {
-                    overlayImage.src = this.src;
-                };
-                highResImg.src = highResSrc;
-            }
-            
-            requestAnimationFrame(() => {
-                overlay.classList.add('active');
-                
-                requestAnimationFrame(() => {
-                    overlayImage.classList.remove('no-transition');
-                    
-                    overlayImage.style.left = '50%';
-                    overlayImage.style.top = '50%';
-                    overlayImage.style.width = 'auto';
-                    overlayImage.style.height = 'auto';
-                    overlayImage.style.maxWidth = '85vw';
-                    overlayImage.style.maxHeight = '85vh';
-                    
-                    overlayImage.style.animation = 'avatarOpen 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
-                    overlayImage.style.borderRadius = '12px';
-                    
-                    setTimeout(() => {
-                        overlayImage.classList.add('glow');
-                    }, 600);
-                    
-                    setTimeout(() => {
-                        animationData.isAnimating = false;
-                    }, 800);
-                });
-            });
-        }
-
-        function closeAvatarOverlay() {
-            if (animationData.isAnimating) return;
-            animationData.isAnimating = true;
-            
-            overlayImage.classList.remove('glow');
+        function close() {
             overlay.classList.remove('active');
-            
-            overlayImage.style.animation = 'avatarClose 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
-            
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                
-                overlayImage.style.cssText = '';
-                overlayImage.className = 'overlay-image';
-                overlayImage.style.animation = '';
-                
-                overlayImage.removeAttribute('src');
-                
-                overlayClose.blur();
-                
-                unblockPageScroll();
-                
-                animationData.isAnimating = false;
-            }, 600);
+            document.body.style.overflow = '';
+            setBackgroundInert(false);
+            if (lastFocus && lastFocus.focus) lastFocus.focus();
         }
-        
-        overlayClose.addEventListener('click', closeAvatarOverlay);
-        overlayBackdrop.addEventListener('click', closeAvatarOverlay);
-        
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && overlay.classList.contains('active')) {
-                closeAvatarOverlay();
+
+        avatar.addEventListener('click', open);
+        avatar.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                open();
             }
         });
-        
-        overlayImage.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-        
-        overlay.addEventListener('wheel', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }, { passive: false });
-        
-        overlay.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }, { passive: false });
-    }
 
-}); // закрытие DOMContentLoaded
+        closeBtn.addEventListener('click', close);
+        backdrop.addEventListener('click', close);
+
+        overlay.addEventListener('keydown', e => {
+            if (e.key === 'Escape') { close(); return; }
+            if (e.key !== 'Tab') return;
+
+            const focusables = overlay.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+            if (!focusables.length) return;
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        });
+    }
+})();
