@@ -46,6 +46,7 @@ window.__I18N__ = {
       "platforms_label": "Платформы",
       "cta_contact": "Связаться",
       "cta_experience": "Опыт работы",
+      "download_pdf": "Скачать PDF",
       "tags": {
         "game_testing": "Тестирование игр",
         "mobile": "Мобильные платформы",
@@ -240,6 +241,7 @@ window.__I18N__ = {
       "platforms_label": "Platforms",
       "cta_contact": "Get In Touch",
       "cta_experience": "View Experience",
+      "download_pdf": "Download PDF",
       "tags": {
         "game_testing": "Game Testing",
         "mobile": "Mobile Platforms",
