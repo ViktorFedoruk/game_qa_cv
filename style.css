@@ -44,21 +44,25 @@
 html {
     scroll-padding-top: 28px;
     -webkit-text-size-adjust: 100%;
+    background: var(--bg-0);
 }
 @media (prefers-reduced-motion: no-preference) {
     html { scroll-behavior: smooth; }
 }
 
+/* Hide the page until translations are applied (prevents EN flash on RU load) */
+html:not(.i18n-ready) body { opacity: 0; }
+
 body.landing-theme {
     font-family: var(--font-b);
     font-weight: 400;
-    background: var(--bg-0);
     color: var(--ink);
     line-height: 1.65;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
     min-height: 100vh;
+    transition: opacity .2s ease;
 }
 
 a { color: inherit; }

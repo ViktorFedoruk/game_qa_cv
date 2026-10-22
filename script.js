@@ -87,6 +87,9 @@
         applyDOMTranslations(lang);
         applyDurationLanguage(lang);
         syncLangUrl(lang);
+
+        // Reveal the page now that translations are applied.
+        root.classList.add('i18n-ready');
     }
 
     function syncLangUrl(lang) {
