@@ -571,6 +571,15 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     border: 1px solid var(--line);
 }
 .btn-secondary:hover { background: rgba(255, 255, 255, .13); border-color: var(--line-bright); }
+.btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    font-family: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.btn-ghost:hover { background: var(--glass-2); border-color: var(--line-bright); }
 
 /* ===== ADVANTAGES ===== */
 .advantages-grid {
@@ -1001,28 +1010,154 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     .reveal { opacity: 1; translate: none; }
 }
 
-/* ===== PRINT ===== */
+/* ===== PRINT / PDF (one-page résumé) ===== */
+.print-only { display: none; }
+
 @media print {
-    @page { margin: 14mm; }
-    .bg-scene, .language-switcher, .main-nav, .skip-link,
-    .avatar-overlay, .hero-actions { display: none !important; }
-    body.landing-theme { background: #fff !important; }
-    .main-content { margin: 0 !important; max-width: none !important; padding: 0 !important; }
+    @page { size: A4; margin: 12mm 14mm; }
+
+    html, body { background: #fff !important; }
+
+    /* Reveal-on-scroll cards must be visible when printing */
+    .reveal { opacity: 1 !important; translate: none !important; }
+
     * {
         background: transparent !important;
         color: #111 !important;
         box-shadow: none !important;
         text-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        animation: none !important;
     }
+
+    /* Chrome & decorative layers */
+    .bg-scene, .language-switcher, .main-nav, .skip-link, .avatar-overlay { display: none !important; }
+
+    /* Hero → header: name / role / contacts / summary */
+    .hero-badge, .hero-tags, .hero-actions, .avatar-container, .hero-stats { display: none !important; }
+    .hero-card { padding: 0 !important; border: none !important; }
+    .hero-grid { display: block !important; }
+    .hero-title {
+        font-size: 26px !important;
+        background: none !important;
+        -webkit-background-clip: initial !important;
+        background-clip: initial !important;
+        color: #111 !important;
+        -webkit-text-fill-color: #111 !important;
+    }
+    .hero-subtitle { margin-top: 4px !important; font-size: 13px !important; color: #333 !important; }
+    .hero-description { margin-top: 8px !important; max-width: none !important; font-size: 10.5px !important; color: #222 !important; }
+
+    .print-only { display: block !important; }
+    .hero-contacts { margin-top: 7px !important; font-size: 10.5px !important; color: #333 !important; }
+    .hero-contacts span::after { content: ' \00b7 '; color: #999; }
+    .hero-contacts span:last-child::after { content: ''; }
+
+    /* Section rhythm */
+    .main-content { margin: 0 !important; max-width: none !important; padding: 0 !important; }
+    .landing-section { padding: 10px 0 !important; }
+    .section-header { margin-bottom: 8px !important; }
+    .section-subtitle { display: none !important; }
+    .section-title {
+        margin-top: 0 !important;
+        font-size: 15px !important;
+        border-bottom: 1px solid #ccc !important;
+        padding-bottom: 4px !important;
+        break-after: avoid;
+        page-break-after: avoid;
+    }
+
+    /* Hide marketing-only blocks */
+    #why, #contact, .availability-card, .contact-cards, .main-footer { display: none !important; }
+
+    /* Cards → plain bordered blocks */
     .glass, .hero-card, .advantage-card, .skill-category, .experience-card,
     .project-card, .tool-card, .education-card, .contact-card {
-        border: 1px solid #ccc !important;
+        border: 1px solid #ddd !important;
+        border-radius: 6px !important;
         break-inside: avoid;
     }
     .glass::before, .glass::after { display: none !important; }
-    .landing-section { padding: 20px 0 !important; }
-    a { text-decoration: none; }
-    a[href^="http"]::after { content: " (" attr(href) ")"; font-size: .8em; color: #555; }
+
+    /* Experience */
+    .vertical-timeline-container { padding-left: 0 !important; gap: 12px !important; }
+    .timeline-laser-line, .timeline-node { display: none !important; }
+    .experience-card.timeline-card { padding: 10px 12px !important; }
+    .exp-header { margin-bottom: 5px !important; }
+    .company-name { font-size: 13px !important; }
+    .position-title { font-size: 11px !important; }
+    .exp-date { font-size: 10px !important; }
+    .timeline-duration { font-size: 9px !important; padding: 1px 6px !important; }
+    .exp-location { font-size: 10px !important; }
+    .project-description { font-size: 10.5px !important; margin-top: 4px !important; }
+    .responsibilities { margin-top: 7px !important; }
+    .responsibilities h4 { font-size: 9.5px !important; margin-bottom: 3px !important; }
+    .resp-grid { display: block !important; }
+    .resp-tag {
+        display: inline !important;
+        padding: 0 !important;
+        border: none !important;
+        background: none !important;
+        font-size: 10px !important;
+        line-height: 1.55 !important;
+    }
+    .resp-tag::after { content: '; '; }
+    .resp-tag:last-child::after { content: ''; }
+
+    /* Skills */
+    .skills-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+    .skill-category { padding: 8px 12px !important; }
+    .skill-category-header { margin-bottom: 8px !important; }
+    .cat-icon { display: none !important; }
+    .skill-category-header h3 { font-size: 11.5px !important; }
+    .skill-category-header p { display: none !important; }
+    .skill-list { gap: 3px !important; }
+    .skill-item { padding: 2px 0 !important; border: none !important; background: none !important; }
+    .skill-item i { display: none !important; }
+    .item-header { font-size: 10px !important; margin-bottom: 0 !important; }
+    .item-desc { display: none !important; }
+
+    /* Projects */
+    .projects-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+    .project-card { padding: 8px 12px !important; }
+    .project-title a { font-size: 12px !important; }
+    .project-title a i { display: none !important; }
+    .project-title a::after { content: '' !important; }
+    .project-tags { margin: 4px 0 !important; gap: 5px !important; }
+    .project-tags .tag { padding: 1px 6px !important; font-size: 9px !important; border: none !important; background: none !important; }
+    .project-tags .tag i { display: none !important; }
+    .project-description { font-size: 10px !important; }
+    .project-role {
+        font-size: 9.5px !important;
+        margin-top: 4px !important;
+        color: #333 !important;
+        line-height: 1.5 !important;
+    }
+    .project-banner { display: none !important; }
+
+    /* Tools */
+    .tools-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+    .tool-card { padding: 8px 12px !important; }
+    .tool-card-header { margin-bottom: 6px !important; }
+    .tool-card-header i { display: none !important; }
+    .tool-card-header h3 { font-size: 11px !important; }
+    .tool-pills { gap: 6px !important; }
+    .tool-pill { padding: 0 !important; font-size: 9.5px !important; border: none !important; background: none !important; }
+    .tool-pill i { display: none !important; }
+
+    /* Education */
+    .education-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+    .education-card { padding: 8px 12px !important; }
+    .edu-icon { display: none !important; }
+    .education-card h3 { font-size: 11.5px !important; }
+    .edu-sub { font-size: 10.5px !important; margin: 2px 0 3px !important; }
+    .edu-year { font-size: 9px !important; padding: 1px 6px !important; margin-bottom: 4px !important; }
+    .education-card p { font-size: 10px !important; }
+
+    /* Links */
+    a { text-decoration: none !important; }
+    a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 8.5px; color: #666; }
 }
 
 /* ===== RESPONSIVE ===== */

@@ -33,6 +33,7 @@
         setupDurations();
         setupAvatarOverlay();
         setupMobileAutoHide();
+        setupPrintButton();
         console.log('%c✦ Spatial CV — QA Game Tester Portfolio', 'color:#38bdf8; font-size:14px; font-weight:bold;');
     }
 
@@ -504,6 +505,13 @@
         window.addEventListener('scroll', update, { passive: true });
         mq.addEventListener('change', update);
         update();
+    }
+
+    /* ==================== PRINT / PDF ==================== */
+
+    function setupPrintButton() {
+        const btn = document.getElementById('downloadPdf');
+        if (btn) btn.addEventListener('click', () => window.print());
     }
 
     /* ==================== AVATAR + OVERLAY DIALOG ==================== */
