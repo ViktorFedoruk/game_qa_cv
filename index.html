@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#0a0b10">
+    <script>
+        // Always open at the top: disable the browser's scroll restoration
+        // so a reload never jumps back to a previous (mid/bottom) position.
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    </script>
+    <noscript>
+        <style>html:not(.i18n-ready) body { opacity: 1 !important; }</style>
+    </noscript>
     <title data-i18n="meta.title">QA Game Tester | Viktor Fedoruk</title>
 
     <!-- SEO и мета-теги -->
