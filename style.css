@@ -320,6 +320,31 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
 }
 .current-time i { color: var(--spec-2); }
 
+.nav-play {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-d);
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #0a0b10;
+    background: linear-gradient(120deg, var(--spec-1), var(--spec-2), var(--spec-3));
+    box-shadow: 0 10px 26px -10px rgba(56, 189, 248, .7);
+    transition: transform .25s var(--ease), box-shadow .3s, filter .3s;
+}
+.nav-play:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -10px rgba(56, 189, 248, .9); filter: saturate(1.1); }
+.nav-play:active { transform: translateY(0); }
+.nav-play i { font-size: .9rem; }
+
 /* ===== MAIN LAYOUT ===== */
 .main-content {
     max-width: 1240px;
@@ -1162,6 +1187,26 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     /* Links */
     a { text-decoration: none !important; }
     a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 8.5px; color: #666; }
+}
+
+/* ===== DESKTOP-ONLY PERF REFINEMENTS (mobile ≤768px untouched) =====
+   Cheap, visually near-identical: lighter backdrop blur + softer aura glow.
+   Scoped to min-width:769px so the mobile layout below keeps its exact values. */
+@media (min-width: 769px) {
+    .glass {
+        backdrop-filter: blur(18px) saturate(175%);
+        -webkit-backdrop-filter: blur(18px) saturate(175%);
+    }
+    .aurora { filter: blur(56px); }
+    .avatar-glow { filter: blur(22px); }
+    .main-nav {
+        backdrop-filter: blur(18px) saturate(160%);
+        -webkit-backdrop-filter: blur(18px) saturate(160%);
+    }
+    .language-switcher {
+        backdrop-filter: blur(14px) saturate(150%);
+        -webkit-backdrop-filter: blur(14px) saturate(150%);
+    }
 }
 
 /* ===== RESPONSIVE ===== */

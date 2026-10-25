@@ -194,6 +194,57 @@ window.__I18N__ = {
     "footer": {
       "copyright": "© {year} Виктор Федорук. Все права защищены.",
       "subtitle": "Портфолио QA инженера, специализирующегося на тестировании игр"
+    },
+    "bugs": {
+      "names": {
+        "cosmetic": "Косметический",
+        "tiny": "Мелкий",
+        "jumper": "Прыгун",
+        "sleeper": "Спящий",
+        "racer": "Гонщик",
+        "flaky": "Мерцающий",
+        "duplicate": "Дубликат",
+        "sly": "Ускользающий",
+        "decoy": "Приманка",
+        "boss": "Критический",
+        "half": "Половинка",
+        "extra": "Ложная цель"
+      },
+      "toasts": {
+        "cosmetic": "Ничего не ломает. Но мозолит глаз.",
+        "tiny": "Мелкий. Прячется на виду.",
+        "jumper": "Прыгает по строкам. Предсказуем, если знать куда.",
+        "sleeper": "Спит ровно 3 секунды. Не зевай.",
+        "racer": "Уворачивается от курсора. Подойди незаметно.",
+        "flaky": "Классический flaky. Лови в момент появления.",
+        "duplicate": "Распадается на две половины. Лови обе.",
+        "sly": "Убегает от курсора. Загони в угол.",
+        "decoy": "Не всё то баг, чем кажется.",
+        "boss": "Настоящий critical. Три удара в окно. Три раза.",
+        "half": "Одна из двух половин дубликата.",
+        "extra": "Вне счёта. Не отвлекайся."
+      },
+      "trigger": "Секретный жук",
+      "hint": "Поймай всех жуков · ESC — выйти",
+      "exit": "Выйти",
+      "exitLabel": "Выйти из игры",
+      "oneLeft": "Остался один",
+      "bossHp": "Здоровье босса",
+      "bossRounds": "Раунды",
+      "split": "Распался на две половины. Лови обе.",
+      "halfToast": "Ещё одна половина",
+      "duplicateCaught": "Пойман. Обе половины.",
+      "popup": {
+        "title": "Все 10 багов пойманы",
+        "phrase": "CV теперь чистое. Скачайте его — или напишите, если найдёте ещё.",
+        "secret": "Упомяните жука в письме — и я пойму, что вы дошли до конца.",
+        "download": "Скачать CV",
+        "restart": "Пройти ещё раз",
+        "close": "Закрыть",
+        "time": "Время ловли: {time}",
+        "breakdown": "{critical} критический · {major} значительных · {minor} незначительных · {cosmetic} косметический"
+      },
+      "secret": "Все баги пойманы. Какой оказался хитрее всех?"
     }
   },
   "en": {
@@ -389,6 +440,57 @@ window.__I18N__ = {
     "footer": {
       "copyright": "© {year} Viktor Fedoruk. All rights reserved.",
       "subtitle": "Portfolio of a QA engineer specializing in game testing"
+    },
+    "bugs": {
+      "names": {
+        "cosmetic": "Cosmetic",
+        "tiny": "Tiny",
+        "jumper": "Jumper",
+        "sleeper": "Sleeper",
+        "racer": "Racer",
+        "flaky": "Flaky",
+        "duplicate": "Duplicate",
+        "sly": "Sly",
+        "decoy": "Decoy",
+        "boss": "Critical",
+        "half": "Half",
+        "extra": "False target"
+      },
+      "toasts": {
+        "cosmetic": "Doesn't break anything. Still an eyesore.",
+        "tiny": "Small. Hides in plain sight.",
+        "jumper": "Hops between lines. Predictable once you know where.",
+        "sleeper": "Sleeps for exactly 3 seconds. Don't blink.",
+        "racer": "Dodges the cursor. Sneak up on it.",
+        "flaky": "Classic flaky. Catch it the moment it appears.",
+        "duplicate": "Splits into two halves. Catch both.",
+        "sly": "Runs from the cursor. Corner it.",
+        "decoy": "Not every bug is what it seems.",
+        "boss": "A real critical. Three hits per window. Three rounds.",
+        "half": "One of the duplicate's two halves.",
+        "extra": "Off the score. Don't get distracted."
+      },
+      "trigger": "Secret bug",
+      "hint": "Catch all the bugs · ESC to exit",
+      "exit": "Exit",
+      "exitLabel": "Exit game",
+      "oneLeft": "One left",
+      "bossHp": "Boss health",
+      "bossRounds": "Rounds",
+      "split": "Split into two halves. Catch both.",
+      "halfToast": "One more half",
+      "duplicateCaught": "Caught. Both halves.",
+      "popup": {
+        "title": "All 10 bugs caught",
+        "phrase": "The CV is clean now. Download it — or write to me if you find more.",
+        "secret": "Mention the bug in your email — I'll know you made it to the end.",
+        "download": "Download CV",
+        "restart": "Play again",
+        "close": "Close",
+        "time": "Catch time: {time}",
+        "breakdown": "{critical} critical · {major} major · {minor} minor · {cosmetic} cosmetic"
+      },
+      "secret": "All bugs caught. Which one turned out to be the trickiest?"
     }
   }
 };
