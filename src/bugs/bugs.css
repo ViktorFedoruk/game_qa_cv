@@ -1,0 +1,849 @@
+/* ============================================================
+   BUGS — «Жуки в контактах» (desktop only, ≥1024px).
+   Изолировано под .bug-* / .bug-layer / .bug-toasts / .bug-popup.
+   Без canvas, только DOM. Переиспользует токены :root из style.css.
+   ============================================================ */
+
+/* Контекст позиционирования для триггера */
+.landing-section#contact { position: relative; }
+
+/* ---------- Триггер (рядом с карточкой доступности, объёмный жук) ---------- */
+.bug-trigger {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    z-index: 5;
+    filter: drop-shadow(0 0 6px rgba(251, 191, 36, .6));
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .15s ease, visibility .15s; /* быстрое исчезновение */
+    pointer-events: none;
+    --bug-color: #fbbf24;
+}
+/* у триггера тело не «дышит» — его движение задаёт прыжок-сальто */
+.bug-trigger .bug-body { animation: none; }
+/* триггер очень активен: лапки постоянно шевелятся */
+.bug-trigger .bug-leg {
+    animation: bug-leg-swing .28s ease-in-out infinite alternate;
+}
+.bug-trigger .bug-leg:nth-child(even) { animation-delay: -.14s; }
+/* триггер: редкое подмигивание правым глазом (раз в ~16с, между морганиями) */
+.bug-trigger .bug-eye:last-child {
+    animation: bug-eye-right 16s ease-in-out infinite;
+}
+@keyframes bug-eye-right {
+    0%, 21%, 25%, 46%, 50%, 60%, 64%, 71%, 75%, 96%, 100% { transform: scaleY(1); }
+    23% { transform: scaleY(0.08); }  /* моргание №1 */
+    48% { transform: scaleY(0.08); }  /* моргание №2 */
+    62% { transform: scaleY(0.08); }  /* подмигивание */
+    73% { transform: scaleY(0.08); }  /* моргание №3 */
+    98% { transform: scaleY(0.08); }  /* моргание №4 */
+}
+/* триггер: серия приседаний (3 приседа с лёгкой волной, ножки поджимаются) */
+.bug-trigger.is-squatting .bug-body {
+    animation: bug-squat-body 2.2s ease-in-out;
+}
+@keyframes bug-squat-body {
+    0%, 100% { transform: translateY(0) scaleY(1) rotate(0deg); }
+    8%, 20% { transform: translateY(3px) scaleY(0.86) rotate(-2deg); }
+    30% { transform: translateY(0) scaleY(1) rotate(0deg); }
+    40%, 52% { transform: translateY(3px) scaleY(0.82) rotate(3deg); }
+    62% { transform: translateY(0) scaleY(1) rotate(0deg); }
+    72%, 84% { transform: translateY(2px) scaleY(0.87) rotate(-2deg); }
+    94% { transform: translateY(0) scaleY(1) rotate(0deg); }
+}
+.bug-trigger.is-squatting .bug-leg {
+    animation: bug-squat-leg 2.2s ease-in-out;
+}
+@keyframes bug-squat-leg {
+    0%, 100% { transform: rotate(var(--a)); }
+    8%, 20% { transform: rotate(calc(var(--a) * 0.2)); }
+    30% { transform: rotate(var(--a)); }
+    40%, 52% { transform: rotate(calc(var(--a) * 0.2)); }
+    62% { transform: rotate(var(--a)); }
+    72%, 84% { transform: rotate(calc(var(--a) * 0.2)); }
+    94% { transform: rotate(var(--a)); }
+}
+.bug-trigger.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .6s ease, visibility .6s; /* плавное появление */
+    /* движение задаёт JS (процедурное, плавное) */
+}
+
+/* ---------- Слой (блокирует инпут фоновой страницы во время игры) ---------- */
+.bug-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    z-index: 3000;
+    cursor: none; /* ОС-курсор скрыт — вместо него DOM-прицел */
+}
+.bug-layer .bug { pointer-events: auto; }
+
+/* ---------- Прицел + мухобойка (визуал курсора) ---------- */
+.bug-aim {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 28px;
+    height: 28px;
+    pointer-events: none;
+    z-index: 3002;
+    filter: drop-shadow(0 0 5px rgba(251, 191, 36, .6));
+}
+.bug-swatter {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 72px;
+    pointer-events: none;
+    z-index: 3003;
+    transform-origin: 20px 68px;
+    will-change: transform;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .45));
+}
+.bug-impact {
+    position: fixed;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border-radius: 50%;
+    border: 2px solid rgba(251, 191, 36, .85);
+    box-shadow: 0 0 14px rgba(251, 191, 36, .55);
+    pointer-events: none;
+    z-index: 3004;
+    animation: bug-impact 340ms ease-out forwards;
+}
+@keyframes bug-impact {
+    0% { transform: scale(.3); opacity: 1; }
+    100% { transform: scale(3.4); opacity: 0; }
+}
+
+/* ---------- Жук: объёмная модель ---------- */
+.bug {
+    position: fixed;
+    left: 0;
+    top: 0;
+    cursor: none;
+    will-change: transform, opacity;
+    z-index: 1001;
+}
+/* хитбокс ~40px */
+.bug::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+}
+
+.bug-inner {
+    position: absolute;
+    inset: 0;
+    transform: scaleX(var(--facing, 1));
+}
+
+/* --- ножки (под панцирем) --- */
+.bug-legs { position: absolute; inset: 0; }
+.bug-leg {
+    position: absolute;
+    top: 48%;
+    width: 2px;
+    height: 48%;
+    background: #1b1f29;
+    border-radius: 1px;
+    transform-origin: top center;
+    transform: rotate(var(--a, 0deg));
+}
+.bug-leg::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: -1px;
+    width: 4px;
+    height: 3px;
+    background: #1b1f29;
+    border-radius: 50%;
+}
+.bug-leg:nth-child(1) { left: 6%; --a: -26deg; }
+.bug-leg:nth-child(2) { left: 18%; --a: -14deg; }
+.bug-leg:nth-child(3) { left: 30%; --a: -2deg; }
+.bug-leg:nth-child(4) { right: 6%; --a: 26deg; }
+.bug-leg:nth-child(5) { right: 18%; --a: 14deg; }
+.bug-leg:nth-child(6) { right: 30%; --a: 2deg; }
+
+/* у «legs»-силуэта ножки заметнее */
+.bug-shape-legs .bug-leg { height: 52%; }
+
+/* бег — лапки шевелятся */
+.bug.is-moving .bug-leg {
+    animation: bug-leg-swing var(--leg-duration, .32s) ease-in-out infinite alternate;
+}
+.bug.is-moving .bug-leg:nth-child(even) { animation-delay: -.16s; }
+@keyframes bug-leg-swing {
+    from { transform: rotate(calc(var(--a) - 13deg)); }
+    to   { transform: rotate(calc(var(--a) + 13deg)); }
+}
+
+/* прыжок — лапки поджаты */
+.bug.is-airborne .bug-leg {
+    animation: none;
+    transform: rotate(0deg);
+}
+
+/* --- тело --- */
+.bug-body {
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    top: 2%;
+    bottom: 22%;
+    animation: bug-idle var(--idle-duration, 3s) ease-in-out var(--idle-delay, 0s) infinite;
+    transform-origin: center bottom;
+}
+@keyframes bug-idle {
+    0%, 100% { transform: scale(1) translateY(0) rotate(0deg); }
+    7%  { transform: scale(1.07, 0.9) translateY(3%); }
+    14% { transform: scale(1) translateY(0); }
+    46% { transform: rotate(3deg); }
+    52% { transform: rotate(-3deg); }
+    58% { transform: rotate(0deg); }
+    80% { transform: scale(1.03, 0.97) translateY(1%); }
+}
+/* прыжок — тело вытягивается */
+.bug.is-airborne .bug-body {
+    animation: none;
+    transform: scale(0.9, 1.14);
+}
+
+/* панцирь с объёмом */
+.bug-shell {
+    position: absolute;
+    inset: 0;
+    border-radius: 50% 50% 44% 44% / 58% 58% 42% 42%;
+    background: var(--bug-color);
+    box-shadow:
+        inset -3px -5px 8px rgba(0, 0, 0, .42),
+        inset 2px 3px 4px rgba(255, 255, 255, .3),
+        0 3px 6px rgba(0, 0, 0, .35);
+}
+/* блик-купол */
+.bug-shell::before {
+    content: '';
+    position: absolute;
+    left: 8%;
+    right: 14%;
+    top: 8%;
+    bottom: 50%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 30%, rgba(255, 255, 255, .6), rgba(255, 255, 255, 0) 62%);
+}
+/* шов надкрылий */
+.bug-shell::after {
+    content: '';
+    position: absolute;
+    top: 5%;
+    bottom: 8%;
+    left: 50%;
+    width: 1px;
+    background: rgba(0, 0, 0, .24);
+    transform: translateX(-50%);
+}
+
+/* --- глаза --- */
+.bug-eyes { position: absolute; inset: 0; }
+.bug-eye {
+    position: absolute;
+    top: 24%;
+    width: 34%;
+    height: 30%;
+    background: #f4f6fb;
+    border-radius: 50%;
+    box-shadow: inset -1px -2px 3px rgba(0, 0, 0, .28);
+    animation: bug-blink var(--blink-duration, 4s) ease-in-out var(--blink-delay, 0s) infinite;
+}
+@keyframes bug-blink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    94% { transform: scaleY(0.08); }
+    98% { transform: scaleY(1); }
+}
+.bug-eye:first-child { left: 3%; }
+.bug-eye:last-child { right: 3%; }
+.bug-eye .pupil {
+    position: absolute;
+    left: 30%;
+    top: 28%;
+    width: 46%;
+    height: 46%;
+    background: #0a0b10;
+    border-radius: 50%;
+    animation: bug-look var(--look-duration, 5s) ease-in-out var(--look-delay, 0s) infinite;
+}
+@keyframes bug-look {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(1.5px, 0.5px); }
+    45% { transform: translate(-1.5px, 0); }
+    70% { transform: translate(0, -1px); }
+}
+.bug-eye .pupil::after {
+    content: '';
+    position: absolute;
+    left: 16%;
+    top: 12%;
+    width: 38%;
+    height: 38%;
+    background: rgba(255, 255, 255, .95);
+    border-radius: 50%;
+}
+
+/* спящий: закрытые глаза + «zzz» */
+.bug.is-sleeping .bug-eye {
+    height: 12%;
+    top: 32%;
+    background: rgba(10, 11, 16, .6);
+    border-radius: 2px;
+    box-shadow: none;
+    animation: none;
+}
+.bug.is-sleeping .bug-eye .pupil { display: none; }
+.bug.is-sleeping::before {
+    content: 'z';
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    color: var(--bug-color);
+    font-family: var(--font-b, sans-serif);
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1;
+    animation: bug-zzz 2.4s ease-out infinite;
+}
+@keyframes bug-zzz {
+    0%   { transform: translateY(0) scale(.7); opacity: 0; }
+    25%  { opacity: 1; }
+    100% { transform: translateY(-160%) scale(1.3); opacity: 0; }
+}
+
+/* --- усики (antennae) --- */
+.bug-antennae { display: none; position: absolute; inset: 0; }
+.bug-shape-antennae .bug-antennae { display: block; }
+.bug-antennae span {
+    position: absolute;
+    top: -8%;
+    width: 1.5px;
+    height: 34%;
+    background: #1b1f29;
+    border-radius: 1px;
+    transform-origin: bottom center;
+    animation: bug-antenna var(--ant-duration, 2.2s) ease-in-out infinite;
+}
+.bug-antennae span:first-child { left: 26%; --a: -22deg; }
+.bug-antennae span:last-child { right: 26%; --a: 22deg; animation-delay: -.5s; }
+@keyframes bug-antenna {
+    0%, 100% { transform: rotate(var(--a)); }
+    50% { transform: rotate(calc(var(--a) + 9deg)); }
+}
+
+/* --- рога (horns) --- */
+.bug-horns { display: none; position: absolute; inset: 0; }
+.bug-shape-horns .bug-horns { display: block; }
+.bug-horns span {
+    position: absolute;
+    top: -8%;
+    width: 0;
+    height: 0;
+    border-left: 3px solid transparent;
+    border-right: 3px solid transparent;
+    border-bottom: 12px solid var(--bug-color);
+}
+.bug-horns span:first-child { left: 8%; transform: rotate(-20deg); }
+.bug-horns span:last-child { right: 8%; transform: rotate(20deg); }
+
+/* boss — свечение вокруг силуэта (§5.5) */
+.bug-boss { filter: drop-shadow(0 0 6px rgba(239, 68, 68, .7)); }
+.bug-flash { animation: bug-flash 200ms ease; }
+@keyframes bug-flash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .3; }
+}
+
+/* раздвоение duplicate: дрожь исходного жука перед появлением половинок */
+.bug.is-splitting .bug-body {
+    animation: bug-split-shake .34s ease-in-out;
+}
+@keyframes bug-split-shake {
+    0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+    15% { transform: translate(-3px, 1px) rotate(-4deg) scale(1.05, .95); }
+    30% { transform: translate(3px, -1px) rotate(4deg) scale(.96, 1.04); }
+    45% { transform: translate(-3px, 2px) rotate(-5deg) scale(1.06, .94); }
+    60% { transform: translate(3px, 1px) rotate(5deg) scale(.95, 1.04); }
+    75% { transform: translate(-2px, -1px) rotate(-3deg) scale(1.03, .97); }
+    90% { transform: translate(2px, 0) rotate(2deg) scale(1.01, .99); }
+}
+/* половинка только что отделилась: проявляется «из ничего» рядом с дубликатом */
+.bug.is-split-half {
+    animation: bug-split-half .5s ease-out;
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, .55));
+}
+@keyframes bug-split-half {
+    0% { opacity: 0; }
+    40% { opacity: 1; }
+    100% { opacity: 1; }
+}
+
+/* шлейф ускорения — лёгкий, в цвет жука (радиальный градиент, без blur) */
+.bug.is-boosting::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 220%;
+    height: 120%;
+    background: radial-gradient(ellipse at center, var(--bug-color) 0%, transparent 68%);
+    opacity: .38;
+    transform: translate(calc(-50% + var(--trail-ox, 0px)), calc(-50% + var(--trail-oy, 0px))) rotate(var(--trail-rot, 0deg)) scaleX(var(--trail-len, 1));
+    transform-origin: center;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ---------- Босс: HP + раунды над жуком (§18.3) ---------- */
+.bug-boss-bars {
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    pointer-events: none;
+    z-index: 3002;
+    will-change: transform;
+}
+.bug-boss-hp,
+.bug-boss-rounds {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 4px;
+    background: rgba(6, 8, 13, .7);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
+}
+.bug-boss-hp .seg {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: #ef4444;
+    transition: background .18s ease;
+}
+.bug-boss-hp .seg.empty { background: rgba(239, 68, 68, .14); }
+.bug-boss-rounds .sec {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: #cbd5e1; /* нейтральный */
+    transition: background .18s ease;
+}
+.bug-boss-rounds .sec.empty { background: rgba(203, 213, 225, .14); }
+
+/* окно уязвимости открыто — мягкая пульсация HP */
+.bug.is-vulnerable .bug-boss-hp .seg:not(.empty) {
+    animation: bug-hp-pulse 1.2s ease-in-out infinite;
+}
+/* перезарядка HP во время лечения: сегменты медленно заполняются по очереди
+   (суммарно ~2.8с — влезает в BOSS_HEAL 3с, без обрыва последнего) */
+.bug-boss-bars.recharging .bug-boss-hp .seg.empty {
+    animation: bug-hp-fill .8s ease-out forwards;
+}
+.bug-boss-bars.recharging .bug-boss-hp .seg.empty:nth-child(1) { animation-delay: .2s; }
+.bug-boss-bars.recharging .bug-boss-hp .seg.empty:nth-child(2) { animation-delay: 1.1s; }
+.bug-boss-bars.recharging .bug-boss-hp .seg.empty:nth-child(3) { animation-delay: 2.0s; }
+@keyframes bug-hp-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .45; }
+}
+@keyframes bug-hp-fill {
+    from { background: rgba(239, 68, 68, .14); }
+    to { background: #ef4444; }
+}
+/* плавное восстановление сегмента HP (синхронно с лечением) */
+.bug-boss-hp .seg.recovering {
+    animation: bug-hp-recover 1.1s ease-out forwards;
+}
+@keyframes bug-hp-recover {
+    from { background: rgba(239, 68, 68, .14); }
+    to { background: #ef4444; }
+}
+
+/* контузия: кружащийся ореол (звёздочки) над головой */
+.bug-dizzy {
+    position: absolute;
+    left: 50%;
+    top: -28px;
+    width: 22px;
+    height: 22px;
+    margin-left: -11px;
+    pointer-events: none;
+    z-index: 3;
+    display: none;
+    animation: bug-dizzy-spin 1.1s linear infinite;
+}
+.bug.is-stunned .bug-dizzy { display: block; }
+.bug-dizzy .star {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #fde68a;
+    box-shadow: 0 0 6px rgba(253, 230, 138, .9);
+}
+.bug-dizzy .star:nth-child(1) { transform: translate(-50%, -50%) translate(0, -11px); }
+.bug-dizzy .star:nth-child(2) { transform: translate(-50%, -50%) translate(9.5px, 5.5px); }
+.bug-dizzy .star:nth-child(3) { transform: translate(-50%, -50%) translate(-9.5px, 5.5px); }
+@keyframes bug-dizzy-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* лечение: волны, сходящиеся к жуку (энергия впитывается) */
+.bug-heal-waves {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    display: none;
+}
+.bug.is-healing .bug-heal-waves { display: block; }
+.bug-heal-waves .ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(74, 222, 128, .55);
+    box-shadow: 0 0 10px rgba(74, 222, 128, .2);
+    animation: bug-heal-absorb 1.5s ease-in infinite;
+}
+.bug-heal-waves .ring:nth-child(2) { animation-delay: .5s; }
+.bug-heal-waves .ring:nth-child(3) { animation-delay: 1.0s; }
+@keyframes bug-heal-absorb {
+    0% { transform: scale(1.7); opacity: 0; }
+    30% { opacity: .7; }
+    100% { transform: scale(0.35); opacity: 0; }
+}
+
+/* приседание перед прыжком */
+.bug.is-crouching .bug-inner {
+    animation: bug-crouch .18s ease-in forwards;
+}
+@keyframes bug-crouch {
+    from { transform: scaleX(var(--facing, 1)); }
+    to { transform: scaleX(var(--facing, 1)) scaleY(.72); }
+}
+
+/* тряска экрана (спавн / взрыв босса) */
+.bug-layer.bug-shake { animation: bug-shake var(--shake-dur, 200ms) linear; }
+@keyframes bug-shake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-7px, 4px); }
+    40% { transform: translate(6px, -4px); }
+    60% { transform: translate(-5px, -3px); }
+    80% { transform: translate(4px, 3px); }
+}
+
+/* вспышка экрана — мягкая, в цвет критического (не слепящая) */
+.bug-screenflash {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(239, 68, 68, .38) 0%, rgba(239, 68, 68, 0) 70%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 3999;
+    animation: bug-screenflash 500ms ease-out forwards;
+}
+@keyframes bug-screenflash {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* ---------- HUD: цель + таймер + счётчик ---------- */
+.bug-hud-bottom {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    z-index: 3001;
+}
+.bug-hud-row {
+    display: flex;
+    gap: 8px;
+}
+
+/* Кнопка выхода — объёмная «клавиша» в HUD, по которой бьют мухобойкой (§18.1).
+   Нейтральная (не янтарная, не цвет жуков), контрастная к тёмному фону HUD.
+   Стоит отдельной строкой под целью — объём и ход нажатия читаются лучше. */
+.bug-exit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 28px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, .2);
+    background: linear-gradient(180deg, #525d72 0%, #2a3140 55%, #222936 100%);
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, .18),
+        inset 0 -2px 3px rgba(0, 0, 0, .35),
+        0 5px 0 #12151d,
+        0 9px 18px rgba(0, 0, 0, .5);
+    color: var(--ink);
+    font-family: var(--font-d);
+    font-size: .85rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    cursor: none; /* мухобойка остаётся, системный курсор не возвращается */
+    pointer-events: auto;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+}
+.bug-exit:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, .24),
+        inset 0 -2px 3px rgba(0, 0, 0, .3),
+        0 7px 0 #12151d,
+        0 13px 24px rgba(0, 0, 0, .58);
+}
+.bug-exit:active,
+.bug-exit.is-pressed {
+    transform: translateY(3px);
+    background: linear-gradient(180deg, #222936 0%, #2a3140 55%, #525d72 100%); /* инверсия градиента */
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, .42),
+        inset 0 -1px 0 rgba(255, 255, 255, .08),
+        0 2px 0 #12151d,
+        0 3px 8px rgba(0, 0, 0, .45);
+}
+.bug-objective,
+.bug-timer,
+.bug-counter {
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(13, 15, 22, .7);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: var(--font-d);
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    pointer-events: none;
+}
+.bug-objective { color: var(--ink-2); }
+.bug-counter.bump { animation: bug-bump 200ms ease; }
+@keyframes bug-bump {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+/* ---------- Тосты ---------- */
+.bug-toasts {
+    position: fixed;
+    right: 20px;
+    bottom: 190px; /* выше HUD (цель + кнопка выхода + счётчик) */
+    z-index: 3001;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none; /* обязательно — не перехватывать клики */
+}
+.bug-toast {
+    display: flex;
+    gap: 10px;
+    max-width: 360px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(13, 15, 22, .85);
+    border: 1px solid var(--line);
+    font-size: .85rem;
+    line-height: 1.4;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .6);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 150ms ease, transform 150ms ease;
+}
+.bug-toast.in { opacity: 1; transform: translateY(0); }
+.bug-toast.out { opacity: 0; transform: translateY(6px); }
+.bug-toast-bar {
+    width: 4px;
+    border-radius: 2px;
+    background: var(--toast-color);
+    flex-shrink: 0;
+}
+.bug-toast-text { color: var(--ink-2); }
+.bug-toast-text b { color: var(--ink); font-weight: 700; }
+.bug-toast-text i {
+    color: var(--toast-color);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    font-size: .72rem;
+}
+
+/* ---------- Частицы ---------- */
+.bug-particle {
+    position: fixed;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 3002;
+    animation: bug-particle 500ms ease-out forwards;
+}
+@keyframes bug-particle {
+    from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    to {
+        transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(.3);
+        opacity: 0;
+    }
+}
+
+/* ---------- Финальный попап ---------- */
+.bug-popup {
+    position: fixed;
+    inset: 0;
+    z-index: 4000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s ease, visibility .3s ease;
+}
+.bug-popup.active { opacity: 1; visibility: visible; }
+.bug-popup-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 6, 11, .8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.bug-popup-card {
+    position: relative;
+    width: min(460px, 90vw);
+    padding: 32px;
+    border-radius: 22px;
+    background: rgba(13, 15, 22, .92);
+    border: 1px solid var(--line-bright);
+    box-shadow: var(--depth);
+    color: var(--ink);
+}
+.bug-popup-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+    font-size: .9rem;
+    transition: background .25s, color .25s;
+}
+.bug-popup-close:hover { background: var(--glass-2); color: var(--ink); }
+.bug-popup-title {
+    font-family: var(--font-d);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+    background: linear-gradient(120deg, var(--spec-1), var(--spec-2), var(--spec-3));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+}
+.bug-popup-time { font-family: var(--font-d); font-size: .85rem; color: var(--spec-2); margin-bottom: 8px; }
+.bug-popup-breakdown {
+    font-family: var(--font-d);
+    font-size: .78rem;
+    color: var(--ink-2);
+    letter-spacing: .04em;
+    margin-bottom: 14px;
+}
+
+.bug-popup-phrase { font-size: .95rem; color: var(--ink-2); margin-bottom: 14px; }
+.bug-popup-secret {
+    font-size: .82rem;
+    color: var(--ink-3);
+    border-left: 2px solid var(--spec-3);
+    padding-left: 12px;
+    margin-bottom: 20px;
+}
+.bug-popup-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.bug-popup-btn {
+    padding: 11px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--glass-2);
+    color: var(--ink);
+    font-family: var(--font-b);
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .25s, border-color .25s;
+}
+.bug-popup-btn:hover { background: rgba(255, 255, 255, .13); border-color: var(--line-bright); }
+.bug-popup-primary {
+    background: linear-gradient(120deg, var(--spec-1), var(--spec-2), var(--spec-3));
+    color: #0a0b10;
+    border: none;
+}
+.bug-popup-primary:hover { filter: saturate(1.1); }
+
+/* ---------- Секретная строчка ---------- */
+.bug-secret {
+    margin-top: 22px;
+    font-size: .88rem;
+    color: var(--ink-3);
+    font-style: italic;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .bug-toast { transition: none; }
+    .bug-counter.bump { animation: none; }
+    .bug-particle { animation: none; }
+    .bug-body, .bug-antennae span, .bug-leg, .bug.is-sleeping::before,
+    .bug-eye, .bug-eye .pupil { animation: none !important; }
+    .bug-boss-hp .seg, .bug-boss-rounds .sec { transition: none; }
+    .bug-boss-hp .seg.recovering { animation: none; }
+    .bug.is-vulnerable .bug-boss-hp .seg:not(.empty),
+    .bug-boss-bars.recharging .bug-boss-hp .seg.empty { animation: none; }
+    .bug-dizzy { animation: none; }
+    .bug-heal-waves .ring { animation: none; }
+    .bug.is-crouching .bug-inner { animation: none; }
+    .bug.is-splitting .bug-body { animation: none; }
+    .bug.is-split-half { animation: none; filter: none; }
+}
+
+/* ---------- Print ---------- */
+@media print {
+    .bug-trigger, .bug-layer, .bug-toasts, .bug-hud-bottom,
+    .bug-particle, .bug-popup, .bug-aim, .bug-swatter, .bug-impact,
+    .bug-screenflash { display: none !important; }
+}
