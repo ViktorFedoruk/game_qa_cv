@@ -141,6 +141,12 @@
         const navLinks = document.querySelectorAll('.nav-link');
         const sections = document.querySelectorAll('.landing-section');
 
+        // Пока идёт плавная прокрутка, вызванная кликом по пункту меню,
+        // onScroll не должен перебивать выбранный пункт — иначе активный
+        // фон мигает на несколько кадров, пока скролл не дойдёт до раздела.
+        let lockedUntil = 0;
+        let lockTarget = null;
+
         function setActive(id) {
             navLinks.forEach(link => {
                 const isActive = link.getAttribute('href') === '#' + id;
@@ -150,14 +156,33 @@
             });
         }
 
+        // Снимаем блокировку, когда долистали до нужного раздела
+        // (или по таймауту — на случай, если раздел уже был на экране).
+        function releaseLockWhenArrived() {
+            if (!lockTarget) return;
+            const sec = document.getElementById(lockTarget);
+            if (!sec) { lockTarget = null; return; }
+            const delta = sec.getBoundingClientRect().top;
+            if (Math.abs(delta) < 4 || performance.now() >= lockedUntil) {
+                lockTarget = null;
+            } else {
+                requestAnimationFrame(releaseLockWhenArrived);
+            }
+        }
+
         navLinks.forEach(link => {
             link.addEventListener('click', e => {
                 const targetId = link.getAttribute('href');
                 const target = document.querySelector(targetId);
                 if (!target) return;
                 e.preventDefault();
+                const id = targetId.slice(1);
+                lockTarget = id;
+                // страховочный таймаут: плавная прокрутка обычно < 800 мс
+                lockedUntil = performance.now() + (REDUCED ? 0 : 1200);
+                setActive(id);
                 target.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' });
-                setActive(targetId.slice(1));
+                requestAnimationFrame(releaseLockWhenArrived);
             });
         });
 
@@ -166,6 +191,8 @@
             if (ticking) return;
             ticking = true;
             requestAnimationFrame(() => {
+                // клик уже выбрал пункт — не перебиваем его до прибытия
+                if (lockTarget) { ticking = false; return; }
                 const scrollPos = window.scrollY + 140;
                 const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 140;
                 let current = sections.length ? sections[sections.length - 1].id : '';
