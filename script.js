@@ -87,6 +87,7 @@
         applyDOMTranslations(lang);
         applyDurationLanguage(lang);
         syncLangUrl(lang);
+        updateSeoTags(lang);
 
         // Reveal the page now that translations are applied.
         root.classList.add('i18n-ready');
@@ -99,6 +100,26 @@
             url.searchParams.set('lang', lang);
             history.replaceState(null, '', url);
         } catch (e) { /* non-critical */ }
+    }
+
+    function updateSeoTags(lang) {
+        // Базовая ссылка на сайт
+        const baseUrl = 'https://viktorfedoruk.github.io/game_qa_cv/';
+        
+        // Если язык русский, добавляем параметр, иначе оставляем чистый URL
+        const currentUrl = (lang === 'ru') ? baseUrl + '?lang=ru' : baseUrl;
+
+        // 1. Обновляем canonical (главную ссылку для Google)
+        const canonicalTag = document.querySelector('link[rel="canonical"]');
+        if (canonicalTag) {
+            canonicalTag.setAttribute('href', currentUrl);
+        }
+
+        // 2. Обновляем og:url (ссылку для соцсетей)
+        const ogUrlTag = document.querySelector('meta[property="og:url"]');
+        if (ogUrlTag) {
+            ogUrlTag.setAttribute('content', currentUrl);
+        }
     }
 
     function applyDOMTranslations(lang) {
