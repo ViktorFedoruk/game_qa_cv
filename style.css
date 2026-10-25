@@ -676,7 +676,34 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     transition: background .25s, border-color .25s, transform .25s var(--ease);
 }
 .skill-item:hover { background: rgba(255, 255, 255, .06); border-color: var(--line); transform: translateX(4px); }
-.skill-item i { color: var(--ok); font-size: 1rem; margin-top: 2px; }
+.skill-item > div { min-width: 0; }
+
+/* Маркер навыка: светящийся ромбик в спектральной палитре (вместо галочек).
+   Цвет задаётся категорией — у каждой свой оттенок. */
+.skill-marker {
+    flex-shrink: 0;
+    width: 9px;
+    height: 9px;
+    margin-top: 7px;
+    border-radius: 2px;
+    background: linear-gradient(135deg, var(--spec-1), var(--spec-2));
+    transform: rotate(45deg);
+    box-shadow: 0 0 10px rgba(103, 232, 249, .55);
+    transition: box-shadow .3s var(--ease), transform .3s var(--ease);
+}
+/* вторая категория — изумрудный оттенок */
+.skill-category:nth-of-type(2) .skill-marker {
+    background: linear-gradient(135deg, var(--spec-2), var(--spec-3));
+    box-shadow: 0 0 10px rgba(52, 211, 153, .5);
+}
+.skill-item:hover .skill-marker {
+    transform: rotate(45deg) scale(1.25);
+    box-shadow: 0 0 16px rgba(103, 232, 249, .9);
+}
+.skill-category:nth-of-type(2) .skill-item:hover .skill-marker {
+    box-shadow: 0 0 16px rgba(52, 211, 153, .85);
+}
+
 .item-header { font-size: .95rem; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
 .item-desc { font-size: .85rem; color: var(--ink-3); line-height: 1.55; }
 
@@ -1145,7 +1172,7 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     .skill-category-header p { display: none !important; }
     .skill-list { gap: 3px !important; }
     .skill-item { padding: 2px 0 !important; border: none !important; background: none !important; }
-    .skill-item i { display: none !important; }
+    .skill-item i, .skill-marker { display: none !important; }
     .item-header { font-size: 10px !important; margin-bottom: 0 !important; }
     .item-desc { display: none !important; }
 
