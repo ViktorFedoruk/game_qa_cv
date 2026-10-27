@@ -34,6 +34,7 @@
         setupAvatarOverlay();
         setupMobileAutoHide();
         setupPrintButton();
+        setupCopyButtons();
         console.log('%c✦ Spatial CV — QA Game Tester Portfolio', 'color:#38bdf8; font-size:14px; font-weight:bold;');
     }
 
@@ -68,8 +69,41 @@
         setLanguage(lang);
 
         buttons.forEach(btn => {
-            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+            btn.addEventListener('click', () => {
+                const next = btn.dataset.lang;
+                if (next === (root.lang === 'ru' ? 'ru' : 'en')) return;
+                warmLanguageFonts().then(() => setLanguage(next));
+            });
         });
+
+        // Первое посещение: заранее прогреваем глифы кириллицы, чтобы первый клик
+        // по RU был мгновенным. Во время первого рендера главный поток не занимаем:
+        // ждём `load`, потом — простоя браузера.
+        function preloadLater() {
+            const idle = window.requestIdleCallback || (fn => setTimeout(fn, 1200));
+            idle(() => warmLanguageFonts(), { timeout: 3000 });
+        }
+        if (document.readyState === 'complete') preloadLater();
+        else window.addEventListener('load', preloadLater, { once: true });
+    }
+
+    // При переключении языка в него подгружаются глифы кириллицы (Unbounded/Manrope).
+    // Грузим их заранее и переключаемся только когда они готовы: иначе текст
+    // на мгновение показывается системным шрифтом и «перескакивает» по строкам.
+    const FONT_READY_MS = 800;
+    let fontWarm = false;
+
+    function warmLanguageFonts() {
+        if (fontWarm || !document.fonts) return Promise.resolve();
+        fontWarm = true;
+        const probes = ['16px Unbounded', '600 16px Unbounded', '16px Manrope', '600 16px Manrope'];
+        // Кириллица отсутствует в латинском subset'е, поэтому браузер вынужден
+        // запросить нужные fonts.gstatic.com-файлы.
+        const loads = probes.map(f => (document.fonts.load(f, 'їж').then(r => r && r.length) || Promise.resolve()).catch(() => 0));
+        return Promise.race([
+            Promise.all(loads),
+            new Promise(resolve => setTimeout(resolve, FONT_READY_MS))
+        ]);
     }
 
     function setLanguage(lang) {
@@ -93,10 +127,13 @@
         root.classList.add('i18n-ready');
     }
 
+    // В адресной строке держим только ?lang=… — без якорей секций (#experience и т.п.),
+    // чтобы клик по навигации не оставлял в URL мусор, который потом копируется в ссылку.
     function syncLangUrl(lang) {
         try {
             const url = new URL(location.href);
-            if (url.searchParams.get('lang') === lang) return;
+            if (url.searchParams.get('lang') === lang && !url.hash) return;
+            url.hash = ''; // removeHash/сеттер не трогают прокрутку
             url.searchParams.set('lang', lang);
             history.replaceState(null, '', url);
         } catch (e) { /* non-critical */ }
@@ -167,14 +204,29 @@
         // фон мигает на несколько кадров, пока скролл не дойдёт до раздела.
         let lockedUntil = 0;
         let lockTarget = null;
+        const HEADER_OFFSET = 140; // отступ от верха: под него «прилипает» раздел
 
+        let activeId = '';
         function setActive(id) {
+            activeId = id;
             navLinks.forEach(link => {
                 const isActive = link.getAttribute('href') === '#' + id;
                 link.classList.toggle('active', isActive);
                 if (isActive) link.setAttribute('aria-current', 'page');
                 else link.removeAttribute('aria-current');
             });
+        }
+
+        // Какой раздел сейчас на экране — с поправкой на «липкую» верхнюю зону.
+        // Берём верх раздела минус отступ и смотрим, какой раздел ближе всего к верху:
+        // так корректно и когда раздел уже прилип к верху, и когда мы чуть не доехали.
+        function sectionAtViewport() {
+            const probe = window.scrollY + HEADER_OFFSET;
+            let current = sections.length ? sections[0].id : '';
+            for (const sec of sections) {
+                if (sec.offsetTop - HEADER_OFFSET / 2 <= probe) current = sec.id;
+            }
+            return current;
         }
 
         // Снимаем блокировку, когда долистали до нужного раздела
@@ -185,7 +237,10 @@
             if (!sec) { lockTarget = null; return; }
             const delta = sec.getBoundingClientRect().top;
             if (Math.abs(delta) < 4 || performance.now() >= lockedUntil) {
+                const arrived = lockTarget;
                 lockTarget = null;
+                // после прибытия подсветка берётся по фактической позиции раздела
+                setActive(arrived === 'hero' ? 'hero' : sectionAtViewport());
             } else {
                 requestAnimationFrame(releaseLockWhenArrived);
             }
@@ -197,14 +252,41 @@
                 const target = document.querySelector(targetId);
                 if (!target) return;
                 e.preventDefault();
-                const id = targetId.slice(1);
-                lockTarget = id;
-                // страховочный таймаут: плавная прокрутка обычно < 800 мс
-                lockedUntil = performance.now() + (REDUCED ? 0 : 1200);
-                setActive(id);
-                target.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' });
-                requestAnimationFrame(releaseLockWhenArrived);
+                scrollToSection(targetId, true);
             });
+        });
+
+        // Плавный переход к разделу без записи якоря в адресную строку (?lang=… остаётся,
+        // но #experience/#projects/… туда не попадают).
+        function scrollToSection(targetId, setActiveLink) {
+            const target = document.querySelector(targetId);
+            if (!target) return;
+            const id = targetId.slice(1);
+            lockTarget = id;
+            // страховочный таймаут: плавная прокрутка обычно < 800 мс
+            lockedUntil = performance.now() + (REDUCED ? 0 : 1200);
+            if (setActiveLink) setActive(id);
+            target.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'start' });
+            requestAnimationFrame(releaseLockWhenArrived);
+            // Браузеру нечего писать в URL: навигация уже сделана через scrollIntoView.
+            // Так переход из hero-карточки не оставляет #experience даже на мгновение.
+            if (location.hash && history.replaceState) {
+                history.replaceState(null, '', location.pathname + location.search);
+            }
+        }
+
+        // Ссылки-переходы по всему документу: пилюли и кнопки в hero-карточке
+        // (#experience / #projects / #tools / #contact) и skip-link. Без этого браузер
+        // сам дописывал якорь в адресную строку.
+        document.addEventListener('click', e => {
+            const a = e.target.closest && e.target.closest('a[href^="#"]');
+            if (!a) return;
+            const href = a.getAttribute('href');
+            if (href.length < 2) return;
+            const target = document.querySelector(href);
+            if (!target) return;
+            e.preventDefault();
+            scrollToSection(href, !!a.classList.contains('nav-link'));
         });
 
         let ticking = false;
@@ -212,9 +294,14 @@
             if (ticking) return;
             ticking = true;
             requestAnimationFrame(() => {
-                // клик уже выбрал пункт — не перебиваем его до прибытия
-                if (lockTarget) { ticking = false; return; }
-                const scrollPos = window.scrollY + 140;
+                // клик уже выбрал пункт — не перебиваем его до прибытия,
+                // но и не теряем подсветку выбранного раздела (в т.ч. при клике из hero)
+                if (lockTarget) {
+                    if (activeId !== lockTarget) setActive(lockTarget);
+                    ticking = false;
+                    return;
+                }
+                const scrollPos = window.scrollY + HEADER_OFFSET;
                 const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 140;
                 let current = sections.length ? sections[sections.length - 1].id : '';
 
@@ -242,13 +329,20 @@
         const el = container.querySelector('span');
         if (!el) return;
 
+        const pad = n => String(n).padStart(2, '0');
+        let timer = null;
+
+        // Каждое обновление выровнено по границе секунды (а не «каждые 1000 мс» с дрейфом)
+        // и останавливается, пока вкладка скрыта.
         const update = () => {
             const now = new Date();
-            const pad = n => String(n).padStart(2, '0');
             el.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+            timer = setTimeout(update, 1000 - (Date.now() % 1000));
         };
-        update();
-        setInterval(update, 1000);
+        const start = () => { if (timer === null) update(); };
+        const stop = () => { if (timer !== null) { clearTimeout(timer); timer = null; } };
+        document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); else start(); });
+        start();
     }
 
     /* ==================== AMBIENT PARTICLE FIELD ==================== */
@@ -300,7 +394,18 @@
             });
         }
 
+        // Пока пыль полностью скрыта первым экраном (hero-карточка с blur), кадры
+        // пропускаем: в покое canvas ничего не рисует, на экране выглядит как раньше.
+        let dustVisible = true;
+        if ('IntersectionObserver' in window) {
+            dustVisible = false;
+            new IntersectionObserver(entries => {
+                dustVisible = entries[entries.length - 1].isIntersecting;
+            }, { threshold: 0 }).observe(canvas);
+        }
+
         function draw(t, dt) {
+            if (!dustVisible) return;
             ctx.clearRect(0, 0, W, H);
             const tSec = t * 0.001;
 
@@ -401,8 +506,22 @@
         }, { passive: true });
 
         // Ambient rotation of the iridescent border + background parallax.
+        // Визуал тот же, но --angle больше не пишется 60 раз в секунду в покое:
+        // пока двигается курсор — полная скорость (как раньше), без движения — плавный
+        // дрейф с редкими шагами, в скрытой вкладке — на паузе.
+        const FULL_MS = 1200;
+        const IDLE_STEP = 250;   // мс между шагами дрейфа в покое
+        const STEP = 0.24;       // 0.015°/мс × 16 мс — шаг кадра (≈24 с на оборот)
+        let lastMove = performance.now();
+        let angle = 0;
+
+        window.addEventListener('pointermove', () => {
+            lastMove = performance.now();
+        }, { passive: true });
+
         function ambient(ts) {
-            const angle = (ts * 0.015) % 360; // one revolution per ~24s
+            const moving = performance.now() - lastMove < FULL_MS;
+            angle = (angle + (moving ? STEP : STEP * IDLE_STEP / 16.7)) % 360;
             root.style.setProperty('--angle', angle.toFixed(2) + 'deg');
 
             const nx = (px / window.innerWidth) * 2 - 1;
@@ -410,7 +529,8 @@
             root.style.setProperty('--px', nx.toFixed(3));
             root.style.setProperty('--py', ny.toFixed(3));
 
-            requestAnimationFrame(ambient);
+            if (moving) requestAnimationFrame(ambient);
+            else setTimeout(() => requestAnimationFrame(ambient), IDLE_STEP);
         }
         requestAnimationFrame(ambient);
 
@@ -556,6 +676,62 @@
         window.addEventListener('scroll', update, { passive: true });
         mq.addEventListener('change', update);
         update();
+    }
+
+    /* ==================== COPY CONTACT ==================== */
+
+    // Копирование значения из карточки контакта. Атрибут data-copy содержит именно
+    // то, что удобно вставить (адрес, ссылку, ник), а подпись показывается
+    // в aria-label кнопки и в подписи карточки — на текущем языке.
+    function setupCopyButtons() {
+        const buttons = document.querySelectorAll('.copy-btn[data-copy]');
+        if (!buttons.length) return;
+
+        const msg = (key, fallback) => {
+            const dict = (typeof window.__I18N__ === 'object' && window.__I18N__) ? window.__I18N__[root.lang === 'ru' ? 'ru' : 'en'] : null;
+            const val = key.split('.').reduce((o, k) => (o && o[k] !== undefined) ? o[k] : undefined, dict);
+            return (val === undefined || val === null) ? fallback : String(val);
+        };
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.cssText = 'position:fixed;top:0;left:-9999px;opacity:0';
+            document.body.appendChild(ta);
+            ta.select();
+            let ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+            document.body.removeChild(ta);
+            return ok;
+        }
+
+        function copyText(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text).then(() => true).catch(() => fallbackCopy(text));
+            }
+            return Promise.resolve(fallbackCopy(text));
+        }
+
+        buttons.forEach(btn => {
+            let resetTimer = null;
+            btn.addEventListener('click', () => {
+                const value = btn.getAttribute('data-copy');
+                if (!value) return;
+                copyText(value).then(ok => {
+                    const key = btn.dataset.i18nAria;
+                    const label = btn.getAttribute('aria-label') || '';
+                    // Мгновенная визуальная реакция: иконка меняется на галочку.
+                    btn.classList.add('is-copied');
+                    if (ok) btn.setAttribute('aria-label', msg('contact.copied', 'Copied'));
+                    clearTimeout(resetTimer);
+                    resetTimer = setTimeout(() => {
+                        btn.classList.remove('is-copied');
+                        btn.setAttribute('aria-label', label);
+                    }, 1400);
+                });
+            });
+        });
     }
 
     /* ==================== PRINT / PDF ==================== */

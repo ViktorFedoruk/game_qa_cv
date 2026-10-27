@@ -50,8 +50,15 @@ html {
     html { scroll-behavior: smooth; }
 }
 
-/* Hide the page until translations are applied (prevents EN flash on RU load) */
-html:not(.i18n-ready) body { opacity: 0; }
+/* Hide the page until translations are applied (prevents EN flash on RU load).
+   Только до первого применения языка и без transition: раньше страница гасилась
+   через `transition: opacity .2s`, а класс снимается и при смене языка — из-за этого
+   каждое переключение RU -> EN -> RU «промигивало»: .2s → 0 → .2s. */
+html:not(.i18n-ready) body,
+html:not(.i18n-ready) body.landing-theme {
+    opacity: 0;
+    transition: none !important;
+}
 
 body.landing-theme {
     font-family: var(--font-b);
@@ -62,7 +69,6 @@ body.landing-theme {
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
     min-height: 100vh;
-    transition: opacity .2s ease;
 }
 
 a { color: inherit; }
@@ -115,6 +121,8 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
 .aurora {
     position: absolute;
     border-radius: 50%;
+    /* статичный градиент: анимация двигает готовый слой (transform), а не пересчитывает blur */
+    will-change: translate, transform;
     filter: blur(72px);
     mix-blend-mode: screen;
     opacity: .55;
@@ -378,6 +386,9 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
 /* ===== LIQUID GLASS ===== */
 .glass {
     position: relative;
+    /* изоляция: содержимое карточки не инвалидирует перерисовку соседних карточек
+       (каждый блок в собственном слое отрисовки) */
+    isolation: isolate;
     border-radius: var(--r-lg);
     background: linear-gradient(160deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .025) 45%, rgba(255, 255, 255, .06));
     backdrop-filter: blur(28px) saturate(175%);
@@ -442,12 +453,23 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     position: absolute;
     inset: -9%;
     border-radius: 50%;
+    /* вращение — композитный transform (слой приподнят z-index, чтобы круг при повороте
+       оставался поверх аватара). Раньше угол conic-gradient пересчитывался каждый кадр
+       вместе с blur — самая дорогая операция страницы. */
+    z-index: 1;
+    will-change: transform;
     background: conic-gradient(from var(--angle), var(--spec-1), var(--spec-2), var(--spec-3), var(--spec-4), var(--spec-1));
     filter: blur(34px);
     opacity: .5;
+    animation: glow-spin 24s linear infinite;
+}
+@keyframes glow-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 .avatar-image {
     position: relative;
+    z-index: 2;
     width: 100%;
     height: 100%;
     aspect-ratio: 1 / 1;
@@ -513,6 +535,7 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     margin-bottom: 22px;
 }
 .badge-dot {
+    flex-shrink: 0;
     width: 7px; height: 7px;
     border-radius: 50%;
     background: var(--spec-3);
@@ -560,6 +583,7 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     align-items: center;
     gap: 8px;
     padding: 7px 14px;
+    line-height: 1.2;
     border-radius: 999px;
     font-size: .84rem;
     color: var(--ink-2);
@@ -581,6 +605,7 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    line-height: 1.2;
     padding: 14px 26px;
     border-radius: 999px;
     font-weight: 600;
@@ -786,6 +811,7 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
 .resp-grid { display: flex; flex-wrap: wrap; gap: 8px; }
 .resp-tag {
     padding: 6px 14px;
+    line-height: 1.3;
     border-radius: 999px;
     font-size: .84rem;
     color: var(--ink-2);
@@ -865,6 +891,7 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     align-items: center;
     gap: 8px;
     padding: 7px 13px;
+    line-height: 1.2;
     border-radius: 999px;
     font-size: .84rem;
     color: var(--ink-2);
@@ -921,15 +948,26 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     align-items: stretch;
 }
 .contact-cards { display: flex; flex-direction: column; gap: 14px; }
+/* Карточка — контейнер: ссылка и кнопка «копировать» лежат рядом, а не вложены
+   одна в другую (кнопку внутрь <a> вкладывать нельзя). */
 .contact-card {
     display: flex;
     align-items: center;
-    gap: 18px;
+    gap: 10px;
     padding: 20px;
-    text-decoration: none;
     transition: transform .5s var(--ease), box-shadow .5s var(--ease);
 }
 .contact-card:hover { transform: translateY(-4px); box-shadow: var(--depth), 0 20px 40px -20px rgba(103, 232, 249, .3); }
+.contact-link {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex: 1;
+    min-width: 0;
+    text-decoration: none;
+    color: inherit;
+}
+.contact-link:focus-visible { outline-offset: 6px; }
 .card-icon {
     width: 48px; height: 48px;
     flex-shrink: 0;
@@ -940,9 +978,69 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
     background: linear-gradient(140deg, rgba(103, 232, 249, .16), rgba(52, 211, 153, .10));
     border: 1px solid var(--line);
 }
-.contact-card h3 { font-size: .86rem; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; }
-.card-link { font-size: 1rem; font-weight: 600; color: var(--ink); margin-top: 2px; }
+.card-body { min-width: 0; }
+.contact-card h3 { font-size: .86rem; font-weight: 600; color: #ffffff; text-transform: uppercase; letter-spacing: .06em; }
+/* Значение контакта читается как ссылка, но приглушённо: цвет — смешанный
+   с основным текстом (не «кислотный» акцент, как у иконки), подчёркивание
+   проявляется при наведении. Обрезка многоточием сохранена — подчёркивание
+   рисуется только под видимым текстом. */
+.card-link {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    font-size: .93rem;
+    font-weight: 500;
+    color: color-mix(in srgb, var(--spec-1) 62%, var(--ink));
+    margin-top: 2px;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 34%, transparent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color .25s, text-decoration-color .25s;
+}
+.contact-link:hover .card-link,
+.contact-link:focus-visible .card-link {
+    color: color-mix(in srgb, var(--spec-1) 55%, var(--ink));
+    text-decoration-color: color-mix(in srgb, currentColor 85%, transparent);
+}
+/* Нажатие — короткий отклик, без смены цвета */
+.contact-link:active .card-link { text-decoration-color: currentColor; }
 .card-sub { font-size: .84rem; color: var(--ink-3); }
+
+/* Кнопка копирования: та же «стеклянная» пилюля, что и у иконок карточки. */
+.copy-btn {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, .04);
+    color: var(--ink-2);
+    font-size: .92rem;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background .25s, color .25s, border-color .25s;
+}
+.copy-btn:hover,
+.copy-btn:focus-visible {
+    background: var(--glass-2);
+    color: var(--ink);
+    border-color: var(--line-bright);
+}
+.copy-btn:focus-visible { outline: 2px solid var(--spec-2); outline-offset: 3px; }
+.copy-btn.is-copied {
+    color: var(--ok);
+    border-color: rgba(87, 217, 184, .45);
+    background: rgba(87, 217, 184, .12);
+}
+.copy-btn.is-copied i::before { content: "\f00c"; /* ✓ */ }
 
 .availability-card {
     display: flex;
@@ -1046,6 +1144,9 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
 /* ===== REVEAL ===== */
 .reveal { opacity: 0; translate: 0 24px; }
 .reveal.is-visible { opacity: 1; translate: 0 0; }
+
+/* первый экран не ждёт IntersectionObserver: карточка hero видна сразу */
+.hero-card { opacity: 1; translate: none; }
 
 .advantage-card, .skill-category, .experience-card, .project-card,
 .tool-card, .education-card, .contact-card, .availability-card {

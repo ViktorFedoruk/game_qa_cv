@@ -33,9 +33,9 @@ window.BUGS.overlay = (function () {
   var swatting = false;
   var swatT = 0;
   var swatHitDone = false;
-  var SWAT_PIVOT_X = 20;   // рукоять мухобойки в SVG-координатах
-  var SWAT_PIVOT_Y = 68;
-  var SWAT_REACH = 54;     // расстояние рукоять → центр головы
+  var SWAT_PIVOT_X = 22;   // рукоять мухобойки в SVG-координатах (viewBox 44×84)
+  var SWAT_PIVOT_Y = 82;
+  var SWAT_REACH = 61;     // расстояние рукоять → центр сетки
   var SWAT_ORBIT = 90;     // градусов: поворот всей мухобойки вокруг курсора (ССW)
 
   function state() { return window.BUGS.state.runtime; }
@@ -108,13 +108,28 @@ window.BUGS.overlay = (function () {
 
     swatterEl = document.createElement('div');
     swatterEl.className = 'bug-swatter';
+    // Мухобойка: круглая сетка на деревянной рукояти — читается однозначно,
+    // в отличие от прежнего прямоугольника с точками (выглядел как молоток).
     swatterEl.innerHTML =
-      '<svg width="40" height="72" viewBox="0 0 40 72">' +
-        '<line x1="20" y1="68" x2="20" y2="28" stroke="#cbd5e1" stroke-width="5" stroke-linecap="round"/>' +
-        '<rect x="5" y="1" width="30" height="26" rx="6" fill="#fbbf24" stroke="#f59e0b" stroke-width="2"/>' +
-        '<circle cx="13" cy="14" r="2.4" fill="#0a0b10"/>' +
-        '<circle cx="20" cy="14" r="2.4" fill="#0a0b10"/>' +
-        '<circle cx="27" cy="14" r="2.4" fill="#0a0b10"/>' +
+      '<svg width="44" height="84" viewBox="0 0 44 84">' +
+        // рукоять (дерево, чуть сужается к сетке)
+        '<path d="M22 82 L22 40" stroke="#b8946a" stroke-width="4.5" stroke-linecap="round"/>' +
+        '<path d="M22 82 L22 76" stroke="#9c7b55" stroke-width="4.5" stroke-linecap="round" opacity=".55"/>' +
+        // короткая металлическая перемычка
+        '<path d="M22 40 L22 34" stroke="#c9d4e2" stroke-width="5" stroke-linecap="round"/>' +
+        // держатель сетки (круглый — главный признак мухобойки)
+        '<ellipse cx="22" cy="20" rx="20.5" ry="19.5" fill="#243444" stroke="#b6c6d9" stroke-width="2.8"/>' +
+        // сетка
+        '<g stroke="#8ba2bb" stroke-width="1.15" opacity=".9">' +
+          '<path d="M5 11 L39 11 M3 20 L41 20 M5 29 L39 29"/>' +
+          '<path d="M12 4 L12 37 M22 1 L22 39 M32 4 L32 37"/>' +
+        '</g>' +
+        // блик на сетке
+        '<ellipse cx="22" cy="20" rx="20.5" ry="19.5" fill="url(#swatGlow)" opacity=".4"/>' +
+        '<defs><radialGradient id="swatGlow" cx="35%" cy="25%">' +
+          '<stop offset="0%" stop-color="#ffffff" stop-opacity=".75"/>' +
+          '<stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>' +
+        '</radialGradient></defs>' +
       '</svg>';
     document.body.appendChild(swatterEl);
 
