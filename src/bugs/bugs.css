@@ -107,11 +107,11 @@
     position: fixed;
     left: 0;
     top: 0;
-    width: 40px;
-    height: 72px;
+    width: 44px;
+    height: 84px;
     pointer-events: none;
     z-index: 3003;
-    transform-origin: 20px 68px;
+    transform-origin: 22px 82px;
     will-change: transform;
     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .45));
 }
@@ -667,34 +667,70 @@
     z-index: 3001;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;  /* все тосты прижаты к левому краю стопки */
     gap: 10px;
     pointer-events: none; /* обязательно — не перехватывать клики */
 }
 .bug-toast {
     display: flex;
-    gap: 10px;
-    max-width: 360px;
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: rgba(13, 15, 22, .85);
-    border: 1px solid var(--line);
-    font-size: .85rem;
-    line-height: 1.4;
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, .6);
+    gap: 12px;
+    /* фиксированная ширина: тосты не «прыгают» от длины текста */
+    width: 360px;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: rgba(11, 13, 19, .94);
+    border: 1px solid var(--line-bright);
+    font-size: .92rem;
+    line-height: 1.45;
+    box-shadow: 0 14px 38px -12px rgba(0, 0, 0, .78);
     opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 150ms ease, transform 150ms ease;
+    transform: translateY(12px) scale(.98);
+    transition:
+        opacity 220ms var(--ease),
+        transform 260ms var(--ease);
 }
-.bug-toast.in { opacity: 1; transform: translateY(0); }
-.bug-toast.out { opacity: 0; transform: translateY(6px); }
+.bug-toast.in { opacity: 1; transform: translateY(0) scale(1); }
+.bug-toast.out {
+    opacity: 0;
+    transform: translateY(-6px) scale(.98);
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+}
 .bug-toast-bar {
     width: 4px;
     border-radius: 2px;
     background: var(--toast-color);
     flex-shrink: 0;
+    /* полоска вытягивается при входе — мягкий акцент на цвете жука */
+    transform: scaleY(.3);
+    transform-origin: top center;
+    transition: transform 320ms var(--ease);
 }
-.bug-toast-text { color: var(--ink-2); }
-.bug-toast-text b { color: var(--ink); font-weight: 700; }
+.bug-toast.in .bug-toast-bar { transform: scaleY(1); }
+/* плавный переезд на новое место при смене тоста (FLIP: смещение задаётся в JS) */
+.bug-toast.is-shifting {
+    animation: bug-toast-shift var(--shift-dur, 280ms) var(--ease) both;
+}
+@keyframes bug-toast-shift {
+    from { translate: 0 var(--shift-from, 0px); }
+    to   { translate: 0 0; }
+}
+.bug-toast-text {
+    color: var(--ink);
+    min-width: 0;            /* позволяет тексту корректно переноситься */
+    overflow-wrap: break-word;
+}
+.bug-toast-text b {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--toast-color);
+    font-weight: 700;
+    font-size: 1.02em;
+}
+/* тост-подсказка: без имени, акцент на тексте */
+.bug-toast-hint { border-color: rgba(56, 189, 248, .38); }
+.bug-toast-hint .bug-toast-text { color: var(--ink); }
 .bug-toast-text i {
     color: var(--toast-color);
     font-style: normal;

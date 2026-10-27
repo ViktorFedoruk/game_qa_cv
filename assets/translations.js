@@ -189,7 +189,11 @@ window.__I18N__ = {
       "status": "Доступен для проектов",
       "location": "Минск, Беларусь",
       "details": "Открыт к предложениям по удаленной работе или контрактам. Готов рассмотреть интересные проекты в игровой индустрии.",
-      "response_time": "Время ответа: 1-2 рабочих дня"
+      "response_time": "Время ответа: 1-2 рабочих дня",
+      "copy_email": "Скопировать адрес электронной почты",
+      "copy_linkedin": "Скопировать ссылку на LinkedIn",
+      "copy_telegram": "Скопировать ник в Telegram",
+      "copied": "Скопировано"
     },
     "footer": {
       "copyright": "© {year} Виктор Федорук. Все права защищены.",
@@ -435,7 +439,11 @@ window.__I18N__ = {
       "status": "Available for projects",
       "location": "Minsk, Belarus",
       "details": "Open to remote work or contract offers. Ready to consider interesting projects in the gaming industry.",
-      "response_time": "Response time: 1-2 business days"
+      "response_time": "Response time: 1-2 business days",
+      "copy_email": "Copy email address",
+      "copy_linkedin": "Copy LinkedIn link",
+      "copy_telegram": "Copy Telegram username",
+      "copied": "Copied"
     },
     "footer": {
       "copyright": "© {year} Viktor Fedoruk. All rights reserved.",

@@ -8,8 +8,12 @@ window.BUGS.behaviors = (function () {
 
   var MARGIN = 24;       // отступ от краёв viewport (§5.2)
   var BASE_SPEED = 90;   // px/s
-  var HUD_W = 450;       // резервная зона HUD (правый нижний угол) — жуки туда не заходят
-  var HUD_H = 200;
+  // Резервная зона HUD в правом нижнем углу — жуки туда не заходят.
+  // Высота покрывает не только сам HUD (цель + кнопка выхода + таймер/счётчик),
+  // но и стопку тостов, которая висит НАД ним: два тоста занимают до ~154 px
+  // плюс отступ. Реальные замеры в 1416×801: HUD от 651, тосты от 457.
+  var HUD_W = 450;       // ширина зоны, px
+  var HUD_H = 360;       // высота зоны, px (HUD ~130 + тосты ~154 + отступы/запас)
   var STEER = 4;         // 1/с: инерция доворота (плавность убегания)
   var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var SPLIT_DRIVE = 0.7;  // с: длительность разлёта половинок (неуязвимы)
@@ -24,10 +28,19 @@ window.BUGS.behaviors = (function () {
   function keepInBounds(bug) {
     bug.x = clamp(bug.x, MARGIN, window.innerWidth - MARGIN);
     bug.y = clamp(bug.y, MARGIN, window.innerHeight - MARGIN);
-    // не заходим под HUD (таймер/счётчик/описание)
+
+    // Не заходим в зону HUD+тостов (правый нижний угол).
+    // Выталкиваем по кратчайшему пути: если жук ближе к левому краю зоны —
+    // сдвигаем влево, если ближе к её верхнему краю — поднимаем вверх.
+    // Так жук не «перескакивает» через весь экран при входе сбоку.
     var hx = window.innerWidth - HUD_W;
     var hy = window.innerHeight - HUD_H;
-    if (bug.y > hy) bug.x = clamp(bug.x, MARGIN, hx);
+    if (bug.x > hx && bug.y > hy) {
+      var pushLeft = bug.x - hx;
+      var pushUp = bug.y - hy;
+      if (pushLeft < pushUp) bug.x = hx;
+      else bug.y = hy;
+    }
   }
 
   // случайная позиция внутри viewport, вне HUD-зоны

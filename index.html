@@ -47,15 +47,23 @@
     <meta name="twitter:image" content="https://viktorfedoruk.github.io/game_qa_cv/assets/og-preview.jpg" />
     <meta name="twitter:image:alt" content="Viktor Fedoruk — QA Game Tester / QA Engineer" />
 
-    <!-- Шрифты и стили -->
+    <!-- Шрифты и стили.
+         Иконки и шрифты — те же, что были на CDN: Font Awesome 6.5.0 и Google Fonts
+         (Unbounded + Manrope), просто подключены напрямую, без цепочки @import. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@300;400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@300;400;500;600;700;800&display=swap"></noscript>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="src/bugs/bugs.css">
+    <!-- Иконки сайта: жук в фирменном градиенте -->
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link rel="icon" type="image/png" sizes="96x96" href="assets/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192x192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 
     <!-- Schema.org: профиль человека (Person) -->
     <script type="application/ld+json">
@@ -187,10 +195,17 @@
                     <div class="hero-avatar-col">
                         <div class="avatar-container">
                             <div class="avatar-glow"></div>
-                            <img src="assets/avatar.jpg" alt="Portrait of Viktor Fedoruk" class="avatar-image"
-                                 role="button" tabindex="0"
-                                 data-i18n-alt="a11y.avatar_alt"
-                                 data-i18n-aria="a11y.avatar_open">
+                            <picture>
+                                <source srcset="assets/avatar-640.webp" type="image/webp">
+                                <img src="assets/avatar.jpg" alt="Portrait of Viktor Fedoruk" class="avatar-image"
+                                     width="640" height="1138"
+                                     fetchpriority="high" decoding="async"
+                                     role="button" tabindex="0"
+                                     data-i18n-alt="a11y.avatar_alt"
+                                     data-i18n-aria="a11y.avatar_open">
+                            </picture>
+                            <!-- assets/avatar-640.webp — тот же кадр, просто сжатый (51 КБ вместо 280). -->
+
                         </div>
 
                         <div class="hero-stats">
@@ -667,30 +682,48 @@
 
             <div class="contact-grid">
                 <div class="contact-cards">
-                    <a href="mailto:victor.fedoruk1997@gmail.com" class="contact-card glass">
-                        <div class="card-icon"><i class="fas fa-envelope" aria-hidden="true"></i></div>
-                        <div>
-                            <h3 data-i18n="contact.email_title">Email</h3>
-                            <div class="card-link">victor.fedoruk1997@gmail.com</div>
-                            <div class="card-sub" data-i18n="contact.email_sub">Primary contact method</div>
-                        </div>
-                    </a>
-                    <a href="https://linkedin.com/in/vfedoruk" target="_blank" rel="noopener noreferrer" class="contact-card glass">
-                        <div class="card-icon"><i class="fab fa-linkedin" aria-hidden="true"></i></div>
-                        <div>
-                            <h3>LinkedIn</h3>
-                            <div class="card-link">linkedin.com/in/vfedoruk</div>
-                            <div class="card-sub" data-i18n="contact.linkedin_sub">Professional profile</div>
-                        </div>
-                    </a>
-                    <a href="https://t.me/mr_Bristle" target="_blank" rel="noopener noreferrer" class="contact-card glass">
-                        <div class="card-icon"><i class="fab fa-telegram" aria-hidden="true"></i></div>
-                        <div>
-                            <h3>Telegram</h3>
-                            <div class="card-link">@mr_Bristle</div>
-                            <div class="card-sub" data-i18n="contact.telegram_sub">Quick communication</div>
-                        </div>
-                    </a>
+                    <div class="contact-card glass">
+                        <a href="mailto:victor.fedoruk1997@gmail.com" class="contact-link">
+                            <div class="card-icon"><i class="fas fa-envelope" aria-hidden="true"></i></div>
+                            <div class="card-body">
+                                <h3 data-i18n="contact.email_title">Email</h3>
+                                <div class="card-link">victor.fedoruk1997@gmail.com</div>
+                                <div class="card-sub" data-i18n="contact.email_sub">Primary contact method</div>
+                            </div>
+                        </a>
+                        <button type="button" class="copy-btn" data-copy="victor.fedoruk1997@gmail.com"
+                                data-i18n-aria="contact.copy_email" aria-label="Copy email address">
+                            <i class="fas fa-copy" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="contact-card glass">
+                        <a href="https://linkedin.com/in/vfedoruk" target="_blank" rel="noopener noreferrer" class="contact-link">
+                            <div class="card-icon"><i class="fab fa-linkedin" aria-hidden="true"></i></div>
+                            <div class="card-body">
+                                <h3>LinkedIn</h3>
+                                <div class="card-link">linkedin.com/in/vfedoruk</div>
+                                <div class="card-sub" data-i18n="contact.linkedin_sub">Professional profile</div>
+                            </div>
+                        </a>
+                        <button type="button" class="copy-btn" data-copy="https://linkedin.com/in/vfedoruk"
+                                data-i18n-aria="contact.copy_linkedin" aria-label="Copy LinkedIn link">
+                            <i class="fas fa-copy" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div class="contact-card glass">
+                        <a href="https://t.me/mr_Bristle" target="_blank" rel="noopener noreferrer" class="contact-link">
+                            <div class="card-icon"><i class="fab fa-telegram" aria-hidden="true"></i></div>
+                            <div class="card-body">
+                                <h3>Telegram</h3>
+                                <div class="card-link">@mr_Bristle</div>
+                                <div class="card-sub" data-i18n="contact.telegram_sub">Quick communication</div>
+                            </div>
+                        </a>
+                        <button type="button" class="copy-btn" data-copy="@mr_Bristle"
+                                data-i18n-aria="contact.copy_telegram" aria-label="Copy Telegram username">
+                            <i class="fas fa-copy" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="availability-card glass">
@@ -717,7 +750,10 @@
         </footer>
     </main>
 
-    <!-- Скрипты -->
+    <!-- Скрипты.
+         В критическом пути — только переводы: i18n применяется до первого кадра
+         (иначе мелькнёт английский текст). Всё остальное — обычное defer-подключение,
+         как было: движок и мини-игра без изменений. -->
     <script src="assets/translations.js" defer></script>
     <script src="src/bugs/config.js" defer></script>
     <script src="src/bugs/state.js" defer></script>
@@ -733,7 +769,7 @@
     <div class="avatar-overlay" id="avatarOverlay" role="dialog" aria-modal="true" tabindex="-1"
          aria-label="Enlarge photo" data-i18n-aria="a11y.avatar_open">
         <div class="overlay-backdrop"></div>
-        <img alt="Enlarged photo" class="overlay-image" id="overlayImage"
+        <img alt="Enlarged photo" class="overlay-image" id="overlayImage" decoding="async"
              data-i18n-alt="a11y.overlay_alt">
         <button class="overlay-close" id="overlayClose" aria-label="Close"
                 data-i18n-aria="a11y.overlay_close">
