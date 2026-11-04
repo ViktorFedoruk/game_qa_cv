@@ -13,7 +13,7 @@
     <noscript>
         <style>html:not(.i18n-ready) body { opacity: 1 !important; }</style>
     </noscript>
-    <title data-i18n="meta.title">QA Game Tester | Viktor Fedoruk</title>
+    <title data-i18n="meta.title">Viktor Fedoruk — QA Game Tester</title>
 
     <!-- SEO и мета-теги -->
     <meta name="description" content="Portfolio of Viktor Fedoruk, QA Game Tester / QA Engineer. Testing mobile, PC and console games.">
@@ -27,11 +27,11 @@
     <link rel="alternate" hreflang="x-default" href="https://viktorfedoruk.github.io/game_qa_cv/" />
 
     <!-- Open Graph (абсолютные URL — обязательны для корректного шаринга) -->
-    <meta property="og:site_name" content="Viktor Fedoruk — QA Game Tester">
+    <meta property="og:site_name" content="Виктор Федорук — QA Game Tester">
     <meta property="og:locale" content="en_US">
     <meta property="og:locale:alternate" content="ru_RU">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="QA Game Tester | Viktor Fedoruk">
+    <meta property="og:title" content="Viktor Fedoruk — QA Game Tester">
     <meta property="og:description" content="Portfolio of a QA engineer specializing in testing mobile and console games.">
     <meta property="og:url" content="https://viktorfedoruk.github.io/game_qa_cv/" />
     <meta property="og:image" content="https://viktorfedoruk.github.io/game_qa_cv/assets/og-preview.jpg" />
@@ -42,7 +42,7 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="QA Game Tester | Viktor Fedoruk">
+    <meta name="twitter:title" content="Viktor Fedoruk — QA Game Tester">
     <meta name="twitter:description" content="Portfolio of a QA engineer specializing in testing mobile and console games.">
     <meta name="twitter:image" content="https://viktorfedoruk.github.io/game_qa_cv/assets/og-preview.jpg" />
     <meta name="twitter:image:alt" content="Viktor Fedoruk — QA Game Tester / QA Engineer" />
@@ -59,8 +59,13 @@
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@300;400;500;600;700;800&display=swap"></noscript>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="src/bugs/bugs.css">
-    <!-- Иконки сайта: жук в фирменном градиенте -->
-    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <!-- Иконки сайта: жук в фирменном градиенте.
+         /favicon.ico лежит в корне — его браузеры и роботы поисковиков ищут
+         автоматически; остальные форматы указаны явно. -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="96x96" href="assets/favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192x192.png">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
@@ -87,6 +92,25 @@
       "sameAs": [
         "https://www.linkedin.com/in/vfedoruk"
       ]
+    }
+    </script>
+
+    <!-- Schema.org: сайт целиком (WebSite) — из этого поисковики берут название
+         сайта (Site Name) в выдаче вместо «GitHub Pages». -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://viktorfedoruk.github.io/game_qa_cv/#website",
+      "name": "Виктор Федорук — QA Game Tester",
+      "alternateName": "Viktor Fedoruk — QA Game Tester",
+      "url": "https://viktorfedoruk.github.io/game_qa_cv/",
+      "inLanguage": ["ru", "en"],
+      "author": {
+        "@type": "Person",
+        "name": "Viktor Fedoruk",
+        "url": "https://viktorfedoruk.github.io/game_qa_cv/"
+      }
     }
     </script>
 </head>

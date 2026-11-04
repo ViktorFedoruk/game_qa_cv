@@ -3,7 +3,7 @@
 window.__I18N__ = {
   "ru": {
     "meta": {
-      "title": "QA Game Tester | Виктор Федорук",
+      "title": "Виктор Федорук — QA Game Tester",
       "description": "Портфолио QA Game Tester / QA Engineer Виктора Федорука. Тестирование мобильных, ПК и консольных игр."
     },
     "a11y": {
@@ -253,7 +253,7 @@ window.__I18N__ = {
   },
   "en": {
     "meta": {
-      "title": "QA Game Tester | Viktor Fedoruk",
+      "title": "Viktor Fedoruk — QA Game Tester",
       "description": "Portfolio of Viktor Fedoruk, QA Game Tester / QA Engineer. Testing mobile, PC and console games."
     },
     "a11y": {
