@@ -109,6 +109,22 @@ h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; }
 }
 .skip-link:focus { top: 18px; }
 
+/* ===== SCREEN-READER / SEO TEXT =====
+   Текст есть в разметке (для поисковиков и скринридеров), но визуально
+   скрыт: не занимает место и не ломает вёрстку. */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* ===== AMBIENT BACKGROUND ===== */
 .bg-scene {
     position: fixed;
