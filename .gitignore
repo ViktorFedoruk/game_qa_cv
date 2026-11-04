@@ -1,0 +1,17 @@
+# --- IDE ---
+.idea/
+.vscode/
+
+# --- OS ---
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# --- локальные служебные файлы ---
+.serve.js
+_*.png
+_*.jpg
+*.log
+
+# --- зависимости (если появятся) ---
+node_modules/
